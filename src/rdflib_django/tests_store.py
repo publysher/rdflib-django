@@ -1,17 +1,25 @@
 """
 Unit tests for the store class. Includes all unit tests that are hard or annoying to doctest.
 """
+import datetime
 from django import test
 import rdflib
-from rdflib.namespace import RDF, RDFS
+from rdflib.namespace import RDF, RDFS, Namespace
 from rdflib.term import URIRef, Literal, BNode
 
 
 artis = URIRef('http://zoowizard.eu/resource/Artis')
+berlin_zoo = URIRef('http://zoowizard.eu/resource/Berlin_Zoo')
 zoo = URIRef('http://schema.org/Zoo')
 org = URIRef('http://schema.org/Organisation')
-artis_label = Literal('Artis')
 anonymous = BNode()
+artis_label = Literal('Artis')
+date_literal = Literal(datetime.date.today())
+number_literal = Literal(14)
+bool_literal = Literal(True)
+
+
+EX = Namespace("http://www.example.com/")
 
 
 class GraphTest(test.TestCase):
@@ -36,7 +44,7 @@ class GraphTest(test.TestCase):
         self.graph.add((artis, RDF.type, zoo))
         self.assertEquals(len(self.graph), 2)
 
-    def test_triples_1(self):
+    def test_single_triple(self):
         """
         Returning the triples should give the correct result
         """
@@ -46,17 +54,18 @@ class GraphTest(test.TestCase):
 
         self.assertTupleEqual(triples[0], (artis, RDF.type, zoo))
 
-    def test_triples_2(self):
+    def test_multiple_triples(self):
         """
         Returning the triples should give the correct result
         """
         self.graph.add((artis, RDF.type, zoo))
         self.graph.add((artis, RDF.type, org))
-        self.assertEquals(len(list(self.graph.triples((None, None, None)))), 2)
+        self.graph.add((berlin_zoo, RDF.type, zoo))
+        self.assertEquals(len(list(self.graph.triples((None, None, None)))), 3)
 
         self.assertEquals(len(list(self.graph.triples((artis, None, None)))), 2)
-        self.assertEquals(len(list(self.graph.triples((None, RDF.type, None)))), 2)
-        self.assertEquals(len(list(self.graph.triples((None, None, zoo)))), 1)
+        self.assertEquals(len(list(self.graph.triples((None, RDF.type, None)))), 3)
+        self.assertEquals(len(list(self.graph.triples((None, None, zoo)))), 2)
         self.assertEquals(len(list(self.graph.triples((None, None, org)))), 1)
 
     def test_blank_nodes(self):
@@ -68,3 +77,18 @@ class GraphTest(test.TestCase):
 
         triple = list(self.graph.triples((None, None, zoo)))[0]
         self.assertTupleEqual(triple, (anonymous, RDF.type, zoo))
+
+    def test_literals(self):
+        """
+        Adding and querying dates should also work.
+        """
+        self.graph.add((artis, RDFS.label, artis_label))
+        self.graph.add((artis, EX['date'], date_literal))
+        self.graph.add((artis, EX['bool'], bool_literal))
+        self.graph.add((artis, EX['number'], number_literal))
+        self.assertEquals(len(self.graph), 4)
+
+        self.assertEquals(self.graph.value(artis, RDFS.label), artis_label)
+        self.assertEquals(self.graph.value(artis, EX['date']), date_literal)
+        self.assertEquals(self.graph.value(artis, EX['bool']), bool_literal)
+        self.assertEquals(self.graph.value(artis, EX['number']), number_literal)

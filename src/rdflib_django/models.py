@@ -36,6 +36,14 @@ class AbstractStatement(models.Model):
     class Meta:
         abstract = True
 
+    def as_triple(self):
+        """
+        Converts this statement back to a triple.
+
+        :return - tuple ((subject, predicate, object), context)
+        """
+        return (self.subject, self.predicate, getattr(self, 'object')), self.context
+
 
 class Statement(AbstractStatement):
     """
@@ -47,23 +55,10 @@ class Statement(AbstractStatement):
     class Meta:
         unique_together = ('store', 'subject', 'predicate', 'object', 'context')
 
-    def save(self, force_insert=False, force_update=False, using=None):
-        super(Statement, self).save(force_insert, force_update, using)
-
-    def as_triple(self):
-        """
-        Converts this statement back to a triple.
-
-        :return - tuple ((subject, predicate, object), context)
-        """
-        return (self.subject, self.predicate, self.object), self.context
-
 
 class LiteralStatement(AbstractStatement):
     """
     A statement where the object is a literal.
     """
 
-    object = models.TextField()
-    object_language = models.CharField("Language", max_length=3, null=True)
-    object_datatype = models.TextField("Data type", null=True)
+    object = fields.LiteralField("Object", null=True)

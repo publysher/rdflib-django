@@ -4,7 +4,7 @@ Custom fields for storing RDF primitives.
 Based on http://blog.elsdoerfer.name/2008/01/08/fuzzydates-or-one-django-model-field-multiple-database-columns/
 """
 from django.db import models
-from rdflib.term import BNode, URIRef
+from rdflib.term import BNode, URIRef, Literal
 
 TYPE_BNODE = 1
 TYPE_URIREF = 0
@@ -49,10 +49,15 @@ class URIFieldCreator(object):
             setattr(obj, self.type_name, TYPE_BNODE)
 
 
-class URIField(models.TextField):
+class URIField(models.CharField):
     """
     Field for storing either URIRefs or BNodes.
     """
+
+    def __init__(self, *args, **kwargs):
+        if not 'max_length' in kwargs:
+            kwargs['max_length'] = 1024
+        super(URIField, self).__init__(*args, **kwargs)
 
     def contribute_to_class(self, cls, name):
         type_field = models.IntegerField(
@@ -69,3 +74,26 @@ class URIField(models.TextField):
         super(URIField, self).contribute_to_class(cls, name)
 
         setattr(cls, self.name, URIFieldCreator(self))
+
+
+class LiteralField(models.TextField):
+    """
+    Custom field for storing literals.
+    """
+
+    __metaclass__ = models.SubfieldBase
+
+    def to_python(self, value):
+        if isinstance(value, Literal):
+            return value
+
+        parts = value.split('^^')
+        if len(parts) != 3:
+            raise ValueError("Wrong value: {0}".format(value))
+        return Literal(parts[0], parts[1] or None, parts[2] or None)
+
+    def get_prep_value(self, value):
+        if not isinstance(value, Literal):
+            raise TypeError("Value {0} has the wrong type: {1}".format(value, value.__class__))
+
+        return unicode(value) + "^^" + (value.language or '') + "^^" + (value.datatype or '')

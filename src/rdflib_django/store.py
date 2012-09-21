@@ -5,6 +5,7 @@ import itertools
 import logging
 import rdflib
 from rdflib.store import VALID_STORE, NO_STORE
+from rdflib.term import Literal, Identifier
 from rdflib_django import models
 
 
@@ -12,6 +13,26 @@ DEFAULT_STORE = "rdflib_django.store.DEFAULT_STORE"      # self-referentiality i
 
 
 log = logging.getLogger(__name__)
+
+
+def _get_query_sets_for_object(o):
+    """
+    Determines the correct query set based on the object.
+
+    If the object is a literal, it will return a query set over LiteralStatements.
+    If the object is a URIRef or BNode, it will return a query set over Statements.
+    If the object is unknown, it will return both the LiteralStatement and Statement query sets.
+
+    This method always returns a list of size at least one.
+    """
+    if o:
+        if isinstance(o, Literal):
+            query_sets = [models.LiteralStatement.objects]
+        else:
+            query_sets = [models.Statement.objects]
+    else:
+        query_sets = [models.Statement.objects, models.LiteralStatement.objects]
+    return query_sets
 
 
 class DjangoStore(rdflib.store.Store):
@@ -108,7 +129,13 @@ class DjangoStore(rdflib.store.Store):
         1
 
         """
-        models.Statement.objects.get_or_create(
+        assert isinstance(s, Identifier)
+        assert isinstance(p, Identifier)
+        assert isinstance(o, Identifier)
+
+        query_set = _get_query_sets_for_object(o)[0]
+
+        query_set.get_or_create(
             subject=s,
             predicate=p,
             object=o,
@@ -119,35 +146,33 @@ class DjangoStore(rdflib.store.Store):
         """
         Removes a triple from the store.
         """
-        try:
-            models.Statement.objects.get(
-                subject=s,
-                predicate=p,
-                object=o,
-                store=self.store
-            ).delete()
-        except models.Statement.DoesNotExist:
-            pass
+        query_sets = _get_query_sets_for_object(o)
 
+        for qs in query_sets:
+            try:
+                qs.get(
+                    subject=s,
+                    predicate=p,
+                    object=o,
+                    store=self.store
+                ).delete()
+            except models.Statement.DoesNotExist:
+                pass
 
     def triples(self, (s, p, o), context=None):
         """
         Returns all triples in the current store.
         """
-        statement_qs = models.Statement.objects
-        literal_qs = models.LiteralStatement.objects
+        query_sets = _get_query_sets_for_object(o)
 
         if s:
-            statement_qs = statement_qs.filter(subject=s)
-            literal_qs = literal_qs.filter(subject=s)
+            query_sets = [qs.filter(subject=s) for qs in query_sets]
         if p:
-            statement_qs = statement_qs.filter(predicate=p)
-            literal_qs = literal_qs.filter(predicate=p)
+            query_sets = [qs.filter(predicate=p) for qs in query_sets]
         if o:
-            statement_qs = statement_qs.filter(object=o)
-            literal_qs = literal_qs.filter(object=o)
+            query_sets = [qs.filter(object=o) for qs in query_sets]
 
-        for statement in itertools.chain(statement_qs.all(), literal_qs.all()):
+        for statement in itertools.chain(*[qs.all() for qs in query_sets]):
             yield statement.as_triple()
 
     def __len__(self, context=None):
