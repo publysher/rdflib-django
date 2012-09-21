@@ -1,12 +1,17 @@
 """
 Essential implementation of the Store interface defined by RDF lib.
 """
+import itertools
+import logging
 import rdflib
 from rdflib.store import VALID_STORE, NO_STORE
 from rdflib_django import models
 
 
 DEFAULT_STORE = "rdflib_django.store.DEFAULT_STORE"      # self-referentiality is so nice
+
+
+log = logging.getLogger(__name__)
 
 
 class DjangoStore(rdflib.store.Store):
@@ -103,13 +108,32 @@ class DjangoStore(rdflib.store.Store):
         1
 
         """
-        s = models.Statement(
+        models.Statement.objects.get_or_create(
             subject=s,
             predicate=p,
             object=o,
             store=self.store
         )
-        s.save()
+
+    def triples(self, (s, p, o), context=None):
+        """
+        Returns all triples in the current store.
+        """
+        statement_qs = models.Statement.objects
+        literal_qs = models.LiteralStatement.objects
+
+        if s:
+            statement_qs = statement_qs.filter(subject=s)
+            literal_qs = literal_qs.filter(subject=s)
+        if p:
+            statement_qs = statement_qs.filter(predicate=p)
+            literal_qs = literal_qs.filter(predicate=p)
+        if o:
+            statement_qs = statement_qs.filter(object=o)
+            literal_qs = literal_qs.filter(object=o)
+
+        for statement in itertools.chain(statement_qs.all(), literal_qs.all()):
+            yield statement.as_triple()
 
     def __len__(self, context=None):
         """
