@@ -115,6 +115,21 @@ class DjangoStore(rdflib.store.Store):
             store=self.store
         )
 
+    def remove(self, (s, p, o), context=None):
+        """
+        Removes a triple from the store.
+        """
+        try:
+            models.Statement.objects.get(
+                subject=s,
+                predicate=p,
+                object=o,
+                store=self.store
+            ).delete()
+        except models.Statement.DoesNotExist:
+            pass
+
+
     def triples(self, (s, p, o), context=None):
         """
         Returns all triples in the current store.

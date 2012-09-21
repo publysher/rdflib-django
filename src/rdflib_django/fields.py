@@ -39,7 +39,7 @@ class URIFieldCreator(object):
         if uri_type == TYPE_URIREF:
             return URIRef(identifier)
 
-        raise ValueError("Unknown type: {0}".format(uri_type))
+        raise ValueError("Unknown type {0} for identifier {1}".format(uri_type, identifier))
 
     def __set__(self, obj, value):
         obj.__dict__[self.field.name] = value
