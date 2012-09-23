@@ -15,6 +15,5 @@ def suite():
     s.addTest(doctest.DocTestSuite(rdflib_django))
     s.addTest(doctest.DocTestSuite(store))
     s.addTest(unittest.findTestCases(tests_store))
-    s.addTest(unittest.makeSuite(tests_rdflib.GraphTestCase))
-#    s.addTest(unittest.findTestCases(tests_rdflib))
+    s.addTest(unittest.findTestCases(tests_rdflib))
     return s

@@ -23,7 +23,6 @@ artis_label = Literal('Artis')
 date_literal = Literal(datetime.date.today())
 number_literal = Literal(14)
 bool_literal = Literal(True)
-uri_context = EX['context']
 graph_context = Graph(identifier=EX['graph-context'])
 
 
@@ -34,25 +33,23 @@ class StoreTest(test.TestCase):
 
     def setUp(self):
         self.store = DjangoStore()
+        self.context = Graph()
 
     def test_add_statement_found(self):
+        """
+        Add a statement in the default context and assure it exists.
+        """
         self.assertEquals(models.Statement.objects.count(), 0)
         self.store.add((artis, RDF.type, zoo), None)
         self.assertEquals(models.Statement.objects.count(), 1)
-        self.assertEquals(models.Statement.objects.filter(context=None).count(), 1)
-
-    def test_add_statement_with_uri_context_found(self):
-        self.assertEquals(models.Statement.objects.count(), 0)
-        self.store.add((artis, RDF.type, zoo), uri_context)
-        self.assertEquals(models.Statement.objects.count(), 1)
-        self.assertEquals(models.Statement.objects.filter(context=uri_context).count(), 1)
 
     def test_add_statement_with_graph_context_found(self):
+        """
+        Add a statement in a specific context and assure it exists.
+        """
         self.assertEquals(models.Statement.objects.count(), 0)
         self.store.add((artis, RDF.type, zoo), graph_context)
         self.assertEquals(models.Statement.objects.count(), 1)
-        self.assertEquals(models.Statement.objects.filter(context=graph_context).count(), 1)
-
 
 
 class GraphTest(test.TestCase):

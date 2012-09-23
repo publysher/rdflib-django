@@ -21,6 +21,18 @@ class Store(models.Model):
     identifier = models.CharField(max_length=200, unique=True)
 
 
+class ContextRef(models.Model):
+    """
+    Models a reference to a single context within a store.
+    """
+
+    id = UUIDField(verbose_name="ID", primary_key=True)
+    identifier = fields.URIField(max_length=200, unique=True)
+
+    def __unicode__(self):
+        return u"{0}".format(self.identifier)
+
+
 class AbstractStatement(models.Model):
     """
     Base class for statements.
@@ -31,7 +43,6 @@ class AbstractStatement(models.Model):
 
     subject = fields.URIField("Subject")
     predicate = fields.URIField("Predicate")
-    context = fields.URIField("Context", null=True)
 
     class Meta:
         abstract = True
@@ -43,10 +54,8 @@ class AbstractStatement(models.Model):
     def as_triple(self):
         """
         Converts this statement back to a triple.
-
-        :return - tuple ((subject, predicate, object), context)
         """
-        return (self.subject, self.predicate, getattr(self, 'object')), self.context
+        return self.subject, self.predicate, getattr(self, 'object')
 
 
 class Statement(AbstractStatement):
@@ -55,9 +64,10 @@ class Statement(AbstractStatement):
     """
 
     object = fields.URIField("Object", null=True)
+    context_refs = models.ManyToManyField(ContextRef)
 
     class Meta:
-        unique_together = ('store', 'subject', 'predicate', 'object', 'context')
+        unique_together = ('store', 'subject', 'predicate', 'object')
 
 
 class LiteralStatement(AbstractStatement):
@@ -66,6 +76,7 @@ class LiteralStatement(AbstractStatement):
     """
 
     object = fields.LiteralField("Object", null=True)
+    context_refs = models.ManyToManyField(ContextRef)
 
     class Meta:
-        unique_together = ('store', 'subject', 'predicate', 'object', 'context')
+        unique_together = ('store', 'subject', 'predicate', 'object')

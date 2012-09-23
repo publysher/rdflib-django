@@ -4,13 +4,13 @@ Essential implementation of the Store interface defined by RDF lib.
 import itertools
 import logging
 import rdflib
-from rdflib.graph import Graph
 from rdflib.store import VALID_STORE, NO_STORE
-from rdflib.term import Literal, Identifier
+from rdflib.term import Literal, Identifier, URIRef
 from rdflib_django import models
 
 
 DEFAULT_STORE = "rdflib_django.store.DEFAULT_STORE"      # self-referentiality is so nice
+DEFAULT_CONTEXT = URIRef("rdflib_django.store.DEFAULT_CONTEXT")
 
 
 log = logging.getLogger(__name__)
@@ -70,6 +70,7 @@ class DjangoStore(rdflib.store.Store):
         super(DjangoStore, self).__init__(configuration, identifier)
         self.identifier = identifier
         self.store = None
+        self.default_context = None
         if identifier == DEFAULT_STORE:
             self.open(configuration, create=True)
 
@@ -90,9 +91,11 @@ class DjangoStore(rdflib.store.Store):
         """
         if self.identifier == DEFAULT_STORE or create:
             self.store = models.Store.objects.get_or_create(identifier=self.identifier)[0]
+            self.default_context = models.ContextRef.objects.get_or_create(identifier=DEFAULT_CONTEXT)[0]
         else:
             try:
                 self.store = models.Store.objects.get(identifier=self.identifier)
+                self.default_context = models.ContextRef.objects.get(identifier=DEFAULT_CONTEXT)
             except models.Store.DoesNotExist:
                 return NO_STORE
 
@@ -115,6 +118,26 @@ class DjangoStore(rdflib.store.Store):
         if self.store:
             self.store.delete()
 
+    def _get_context_ref(self, context):
+        """
+        Returns a ContextRef for the specified context. Raises DoesNotExist if it does not exist.
+        """
+        if context is None:
+            return self.default_context
+        else:
+            identifier = context.identifier if hasattr(context, 'identifier') else unicode(context)
+            return models.ContextRef.objects.get(identifier=identifier)
+
+    def _get_or_create_context_ref(self, context):
+        """
+        Returns a ContextRef for the specified context. Creates a new one if it does not yet exist.
+        """
+        if context is None:
+            return self.default_context
+        else:
+            identifier = context.identifier if hasattr(context, 'identifier') else unicode(context)
+            return models.ContextRef.objects.get_or_create(identifier=identifier)[0]
+
     def add(self, (s, p, o), context, quoted=False):
         """
         Adds a triple to the store.
@@ -136,76 +159,74 @@ class DjangoStore(rdflib.store.Store):
         assert not quoted
 
         query_set = _get_query_sets_for_object(o)[0]
-        query_set.get_or_create(
+        statement = query_set.get_or_create(
             subject=s,
             predicate=p,
             object=o,
-            context=context,
             store=self.store
-        )
+        )[0]
+        context_ref = self._get_or_create_context_ref(context)
+        if context_ref:
+            statement.context_refs.add(context_ref)
 
     def remove(self, (s, p, o), context=None):
         """
         Removes a triple from the store.
         """
+        try:
+            context_ref = self._get_context_ref(context)
+        except models.ContextRef.DoesNotExist:
+            return
+
         query_sets = _get_query_sets_for_object(o)
+        query_sets = self._filter_query_sets(query_sets, (s, p, o), context_ref)
+
         for qs in query_sets:
-            try:
-                qs.get(
-                    subject=s,
-                    predicate=p,
-                    object=o,
-                    context=context,
-                    store=self.store
-                ).delete()
-            except models.Statement.DoesNotExist:
-                pass
-            except models.LiteralStatement.DoesNotExist:
-                pass
+            for stmt in qs.all():
+                stmt.context_refs.remove(context_ref)
+                if context_ref is self.default_context or not stmt.context_refs.count():
+                    stmt.delete()
 
-    def _get_matching_statements(self, triple, context):
-        (s, p, o) = triple or (None, None, None)
-
-        query_sets = _get_query_sets_for_object(o)
-
+    def _filter_query_sets(self, query_sets, (s, p, o), context_ref):
+        """
+        Creates filtered versions of the specified query sets.
+        """
         if s is not None:
             query_sets = [qs.filter(subject=s) for qs in query_sets]
         if p is not None:
             query_sets = [qs.filter(predicate=p) for qs in query_sets]
         if o is not None:
             query_sets = [qs.filter(object=o) for qs in query_sets]
-        if context is None:
-            query_sets = [qs.distinct() for qs in query_sets]
-        else:
-            query_sets = [qs.filter(context=context) for qs in query_sets]
-
-        return itertools.chain(*[qs.all() for qs in query_sets])
+        if context_ref is not self.default_context:
+            query_sets = [qs.filter(context_refs=context_ref) for qs in query_sets]
+        return query_sets
 
     def triples(self, (s, p, o), context=None):
         """
         Returns all triples in the current store.
         """
-        matching_statements = self._get_matching_statements((s, p, o), context)
+        context_ref = self._get_context_ref(context)
+        query_sets = _get_query_sets_for_object(o)
+
+        query_sets = self._filter_query_sets(query_sets, (s, p, o), context_ref)
+
+        matching_statements = itertools.chain(*[qs.all() for qs in query_sets])
         for statement in matching_statements:
-            yield statement.as_triple()
+            yield statement.as_triple(), context
 
     def __len__(self, context=None):
         """
         Returns the number of statements in this Graph.
         """
+        context_ref = self._get_context_ref(context)
+
         query_sets = _get_query_sets_for_object(None)
-        if context is not None:
-            query_sets = [qs.filter(context=context.identifier) for qs in query_sets]
+        if context_ref is not self.default_context:
+            query_sets = [qs.filter(context_refs=context_ref) for qs in query_sets]
 
         counts = [qs.count() for qs in query_sets]
         return reduce(lambda x, y: x + y, counts, 0)
 
     def contexts(self, triple=None):
-        result = set()
-        for s in self._get_matching_statements(triple, None):
-            if s.context is not None:
-                result.add(s.context)
-        return result
-
-
-
+        for c in models.ContextRef.objects.all():
+            yield c.identifier

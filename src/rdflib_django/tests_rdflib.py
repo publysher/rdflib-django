@@ -369,14 +369,13 @@ class ContextTestCase(test.TestCase):
         graph = Graph(self.graph.store, c2)
         graph.add(triple)
 
-        self.assertEquals(len(self.graph), 3)
-
     def testConjunction(self):
+        self.addStuffInMultipleContexts()
         triple = (self.pizza, self.likes, self.pizza)
         # add to context 1
-        graph_c1 = Graph(self.graph.store, self.c1)
-        graph_c1.add(triple)
-        self.assertEquals(len(self.graph), len(graph_c1))
+        graph = Graph(self.graph.store, self.c1)
+        graph.add(triple)
+        self.assertEquals(len(self.graph), len(graph))
 
     def testAdd(self):
         self.addStuff()
@@ -420,21 +419,21 @@ class ContextTestCase(test.TestCase):
         self.addStuffInMultipleContexts()
 
         # triple should be still in store after removing it from c1 + c2
-        self.assert_(triple in self.graph)
+        self.assertIn(triple, self.graph)
         graph = Graph(self.graph.store, c1)
         graph.remove(triple)
-        self.assert_(triple in self.graph)
+        self.assertIn(triple, self.graph)
         graph = Graph(self.graph.store, c2)
         graph.remove(triple)
-        self.assert_(triple in self.graph)
+        self.assertIn(triple, self.graph)
         self.graph.remove(triple)
         # now gone!
-        self.assert_(triple not in self.graph)
+        self.assertNotIn(triple, self.graph)
 
         # add again and see if remove without context removes all triples!
         self.addStuffInMultipleContexts()
         self.graph.remove(triple)
-        self.assert_(triple not in self.graph)
+        self.assertNotIn(triple, self.graph)
 
     def testContexts(self):
         triple = (self.pizza, self.hates, self.tarek)
@@ -446,14 +445,12 @@ class ContextTestCase(test.TestCase):
                 return c.identifier
             return c
 
-        graph_contexts = self.graph.contexts()
-        context_identifiers = [cid(c) for c in graph_contexts]
-        self.assertIn(self.c1, context_identifiers)
-        self.assertIn(self.c2, context_identifiers)
+        self.assert_(self.c1 in [cid(c) for c in self.graph.contexts()])
+        self.assert_(self.c2 in [cid(c) for c in self.graph.contexts()])
 
         contextList = [cid(c) for c in self.graph.contexts(triple)]
-        self.assertIn(self.c1, contextList)
-        self.assertIn(self.c2, contextList)
+        self.assert_(self.c1 in contextList)
+        self.assert_(self.c2 in contextList)
 
     def testRemoveContext(self):
         c1 = self.c1
