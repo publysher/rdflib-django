@@ -165,8 +165,6 @@ class GraphTestCase(test.TestCase):
         graph.add((gv1, RDF.value, gv2))
         v = graph.value(gv1)
         self.assertEquals(gv2.identifier, v.identifier)
-        #print list(gv2)
-        #print gv2.identifier
         graph.remove((gv1, RDF.value, gv2))
 
     def testConnected(self):
@@ -371,13 +369,14 @@ class ContextTestCase(test.TestCase):
         graph = Graph(self.graph.store, c2)
         graph.add(triple)
 
+        self.assertEquals(len(self.graph), 3)
+
     def testConjunction(self):
-        self.addStuffInMultipleContexts()
         triple = (self.pizza, self.likes, self.pizza)
         # add to context 1
-        graph = Graph(self.graph.store, self.c1)
-        graph.add(triple)
-        self.assertEquals(len(self.graph), len(graph))
+        graph_c1 = Graph(self.graph.store, self.c1)
+        graph_c1.add(triple)
+        self.assertEquals(len(self.graph), len(graph_c1))
 
     def testAdd(self):
         self.addStuff()
@@ -447,12 +446,14 @@ class ContextTestCase(test.TestCase):
                 return c.identifier
             return c
 
-        self.assert_(self.c1 in [cid(c) for c in self.graph.contexts()])
-        self.assert_(self.c2 in [cid(c) for c in self.graph.contexts()])
+        graph_contexts = self.graph.contexts()
+        context_identifiers = [cid(c) for c in graph_contexts]
+        self.assertIn(self.c1, context_identifiers)
+        self.assertIn(self.c2, context_identifiers)
 
         contextList = [cid(c) for c in self.graph.contexts(triple)]
-        self.assert_(self.c1 in contextList)
-        self.assert_(self.c2 in contextList)
+        self.assertIn(self.c1, contextList)
+        self.assertIn(self.c2, contextList)
 
     def testRemoveContext(self):
         c1 = self.c1

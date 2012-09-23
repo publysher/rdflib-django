@@ -32,3 +32,5 @@ pip-log.txt
 *.ipr
 atlassian-ide-plugin.xml
 
+# DB
+rdflib_django.db

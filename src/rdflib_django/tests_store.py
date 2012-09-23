@@ -4,8 +4,14 @@ Unit tests for the store class. Includes all unit tests that are hard or annoyin
 import datetime
 from django import test
 import rdflib
+from rdflib.graph import Graph
 from rdflib.namespace import RDF, RDFS, Namespace
 from rdflib.term import URIRef, Literal, BNode
+from rdflib_django import models
+from rdflib_django.store import DjangoStore
+
+
+EX = Namespace("http://www.example.com/")
 
 
 artis = URIRef('http://zoowizard.eu/resource/Artis')
@@ -17,9 +23,36 @@ artis_label = Literal('Artis')
 date_literal = Literal(datetime.date.today())
 number_literal = Literal(14)
 bool_literal = Literal(True)
+uri_context = EX['context']
+graph_context = Graph(identifier=EX['graph-context'])
 
 
-EX = Namespace("http://www.example.com/")
+class StoreTest(test.TestCase):
+    """
+    Some checks that operate directly on the underlying Model implementation.
+    """
+
+    def setUp(self):
+        self.store = DjangoStore()
+
+    def test_add_statement_found(self):
+        self.assertEquals(models.Statement.objects.count(), 0)
+        self.store.add((artis, RDF.type, zoo), None)
+        self.assertEquals(models.Statement.objects.count(), 1)
+        self.assertEquals(models.Statement.objects.filter(context=None).count(), 1)
+
+    def test_add_statement_with_uri_context_found(self):
+        self.assertEquals(models.Statement.objects.count(), 0)
+        self.store.add((artis, RDF.type, zoo), uri_context)
+        self.assertEquals(models.Statement.objects.count(), 1)
+        self.assertEquals(models.Statement.objects.filter(context=uri_context).count(), 1)
+
+    def test_add_statement_with_graph_context_found(self):
+        self.assertEquals(models.Statement.objects.count(), 0)
+        self.store.add((artis, RDF.type, zoo), graph_context)
+        self.assertEquals(models.Statement.objects.count(), 1)
+        self.assertEquals(models.Statement.objects.filter(context=graph_context).count(), 1)
+
 
 
 class GraphTest(test.TestCase):
@@ -34,7 +67,6 @@ class GraphTest(test.TestCase):
         """
         What happens if we add statements that are all URI's
         """
-
         self.graph.add((artis, RDF.type, zoo))
         self.assertEquals(len(self.graph), 1)
 

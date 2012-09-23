@@ -31,10 +31,14 @@ class AbstractStatement(models.Model):
 
     subject = fields.URIField("Subject")
     predicate = fields.URIField("Predicate")
-    context = models.TextField("Context")
+    context = fields.URIField("Context", null=True)
 
     class Meta:
         abstract = True
+
+    def __unicode__(self):
+        """Returns the triple and its context"""
+        return u"{0}".format(self.as_triple())
 
     def as_triple(self):
         """
@@ -62,3 +66,6 @@ class LiteralStatement(AbstractStatement):
     """
 
     object = fields.LiteralField("Object", null=True)
+
+    class Meta:
+        unique_together = ('store', 'subject', 'predicate', 'object', 'context')

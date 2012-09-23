@@ -4,6 +4,7 @@ Essential implementation of the Store interface defined by RDF lib.
 import itertools
 import logging
 import rdflib
+from rdflib.graph import Graph
 from rdflib.store import VALID_STORE, NO_STORE
 from rdflib.term import Literal, Identifier
 from rdflib_django import models
@@ -132,13 +133,14 @@ class DjangoStore(rdflib.store.Store):
         assert isinstance(s, Identifier)
         assert isinstance(p, Identifier)
         assert isinstance(o, Identifier)
+        assert not quoted
 
         query_set = _get_query_sets_for_object(o)[0]
-
         query_set.get_or_create(
             subject=s,
             predicate=p,
             object=o,
+            context=context,
             store=self.store
         )
 
@@ -147,39 +149,63 @@ class DjangoStore(rdflib.store.Store):
         Removes a triple from the store.
         """
         query_sets = _get_query_sets_for_object(o)
-
         for qs in query_sets:
             try:
                 qs.get(
                     subject=s,
                     predicate=p,
                     object=o,
+                    context=context,
                     store=self.store
                 ).delete()
             except models.Statement.DoesNotExist:
                 pass
+            except models.LiteralStatement.DoesNotExist:
+                pass
+
+    def _get_matching_statements(self, triple, context):
+        (s, p, o) = triple or (None, None, None)
+
+        query_sets = _get_query_sets_for_object(o)
+
+        if s is not None:
+            query_sets = [qs.filter(subject=s) for qs in query_sets]
+        if p is not None:
+            query_sets = [qs.filter(predicate=p) for qs in query_sets]
+        if o is not None:
+            query_sets = [qs.filter(object=o) for qs in query_sets]
+        if context is None:
+            query_sets = [qs.distinct() for qs in query_sets]
+        else:
+            query_sets = [qs.filter(context=context) for qs in query_sets]
+
+        return itertools.chain(*[qs.all() for qs in query_sets])
 
     def triples(self, (s, p, o), context=None):
         """
         Returns all triples in the current store.
         """
-        query_sets = _get_query_sets_for_object(o)
-
-        if s:
-            query_sets = [qs.filter(subject=s) for qs in query_sets]
-        if p:
-            query_sets = [qs.filter(predicate=p) for qs in query_sets]
-        if o:
-            query_sets = [qs.filter(object=o) for qs in query_sets]
-
-        for statement in itertools.chain(*[qs.all() for qs in query_sets]):
+        matching_statements = self._get_matching_statements((s, p, o), context)
+        for statement in matching_statements:
             yield statement.as_triple()
 
     def __len__(self, context=None):
         """
         Returns the number of statements in this Graph.
         """
-        statement_qs = models.Statement.objects
-        literal_qs = models.LiteralStatement.objects
+        query_sets = _get_query_sets_for_object(None)
+        if context is not None:
+            query_sets = [qs.filter(context=context.identifier) for qs in query_sets]
 
-        return statement_qs.count() + literal_qs.count()
+        counts = [qs.count() for qs in query_sets]
+        return reduce(lambda x, y: x + y, counts, 0)
+
+    def contexts(self, triple=None):
+        result = set()
+        for s in self._get_matching_statements(triple, None):
+            if s.context is not None:
+                result.add(s.context)
+        return result
+
+
+

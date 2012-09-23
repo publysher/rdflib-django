@@ -13,7 +13,7 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': '',
         'PORT': '',
-    }
+        }
 }
 
 SITE_ID = 1
@@ -31,5 +31,5 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
 
     'rdflib_django',
-)
+    )
 ROOT_URLCONF = 'rdflib_django.urls'
