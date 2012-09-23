@@ -42,15 +42,37 @@ Examples:
         if not args:
             raise CommandError("No file or resource specified.")
 
-        if options.get('store'):
-            store = DjangoStore(configuration=None, identifier=options.get('store'))
+        info = options.get('verbosity') >= 2
+        store_id = options.get('store')
+        context_id = options.get('context')
+        source = args[0]
+
+        if info:
+            print("Parsing {0}".format(source))
+
+        intermediate = Graph()
+        try:
+            intermediate.parse(source, format=options.get('format'))
+        except Exception as e:
+            raise CommandError(e)
+
+        if info:
+            print("Parsed {0} triples".format(len(intermediate)))
+
+        if store_id:
+            store = DjangoStore(configuration=None, identifier=store_id)
         else:
             store = DjangoStore(configuration=None)
 
-        if options.get('context'):
-            graph = Graph(store=store, identifier=URIRef(options.get('context')))
+        if context_id:
+            graph = Graph(store=store, identifier=URIRef(context_id))
         else:
             graph = Graph(store=store)
-
         graph.open(configuration=None)
-        graph.parse(args[0], format=options.get('format'))
+
+        if info:
+            print("Storing {0} triples".format(len(graph)))
+        for triple in intermediate:
+            graph.add(triple)
+        if info:
+            print("Done")

@@ -63,8 +63,8 @@ class AbstractStatement(models.Model):
     id = UUIDField("ID", primary_key=True)
     store = models.ForeignKey(Store)
 
-    subject = fields.URIField("Subject")
-    predicate = fields.URIField("Predicate")
+    subject = fields.URIField("Subject", db_index=True)
+    predicate = fields.URIField("Predicate", db_index=True)
 
     class Meta:
         abstract = True
@@ -85,8 +85,8 @@ class Statement(AbstractStatement):
     A generic statement.
     """
 
-    object = fields.URIField("Object", null=True)
-    context_refs = models.ManyToManyField(ContextRef)
+    object = fields.URIField("Object", null=True, db_index=True)
+    context_refs = models.ManyToManyField(ContextRef, verbose_name="Context(s)")
 
     class Meta:
         unique_together = ('store', 'subject', 'predicate', 'object')
@@ -97,8 +97,8 @@ class LiteralStatement(AbstractStatement):
     A statement where the object is a literal.
     """
 
-    object = fields.LiteralField("Object", null=True)
-    context_refs = models.ManyToManyField(ContextRef)
+    object = fields.LiteralField("Object", null=True, db_index=True)
+    context_refs = models.ManyToManyField(ContextRef, verbose_name="Context(s)")
 
     class Meta:
         unique_together = ('store', 'subject', 'predicate', 'object')
