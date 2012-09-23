@@ -145,5 +145,3 @@ class LiteralField(models.TextField):
             raise TypeError("Value {0} has the wrong type: {1}".format(value, value.__class__))
 
         return unicode(value) + "^^" + (value.language or '') + "^^" + (value.datatype or '')
-
-

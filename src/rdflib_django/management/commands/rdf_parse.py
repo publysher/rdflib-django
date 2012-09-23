@@ -5,10 +5,8 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 import sys
 from django.db import transaction
-from rdflib import plugins, plugin
 from rdflib.graph import Graph
 from rdflib.term import URIRef
-from rdflib_django.models import Store
 from rdflib_django.store import DjangoStore
 
 
@@ -56,5 +54,3 @@ Examples:
 
         graph.open(configuration=None)
         graph.parse(args[0], format=options.get('format'))
-
-

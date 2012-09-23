@@ -10,7 +10,7 @@ from rdflib_django import models
 
 
 DEFAULT_STORE = "Default Store"
-DEFAULT_CONTEXT = BNode("Default Context")
+GLOBAL_CONTEXT = BNode("Global Context")
 
 
 log = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ class DjangoStore(rdflib.store.Store):
     is always present and needs not be opened.
 
     >>> g.store.identifier
-    'rdflib_django.store.DEFAULT_STORE'
+    'Default Store'
 
     """
 
@@ -97,7 +97,7 @@ class DjangoStore(rdflib.store.Store):
             except models.Store.DoesNotExist:
                 return NO_STORE
 
-        self.default_context = models.ContextRef.objects.get_or_create(identifier=DEFAULT_CONTEXT, store=self.store)[0]
+        self.default_context = models.ContextRef.objects.get_or_create(identifier=GLOBAL_CONTEXT, store=self.store)[0]
         return VALID_STORE
 
     def destroy(self, configuration=None):
