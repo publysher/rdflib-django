@@ -65,7 +65,7 @@ class AbstractStatement(models.Model):
 
     def __unicode__(self):
         """Returns the triple and its context"""
-        return u"{0}".format(self.as_triple())
+        return u"({0}, {1}, {2})".format(self.subject, self.predicate, getattr(self, 'object'))
 
     def as_triple(self):
         """

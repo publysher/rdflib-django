@@ -4,6 +4,7 @@ Management command for parsing RDF into the store.
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 import sys
+from django.db import transaction
 from rdflib import plugins, plugin
 from rdflib.graph import Graph
 from rdflib.term import URIRef
@@ -34,10 +35,11 @@ class Command(BaseCommand):
 Examples:
     {0} rdf_parse my_file.rdf
     {0} rdf_parse --format n3 my_file.n3
-    {0} rdf_parse http://zoowizard.eu/datasource/zoochat/294
+    {0} rdf_parse --context http://zoowizard.eu http://zoowizard.eu/datasource/zoochat/294
     """.format(sys.argv[0])
     args = 'file-or-resource'
 
+    @transaction.commit_on_success
     def handle(self, *args, **options):
         if not args:
             raise CommandError("No file or resource specified.")
