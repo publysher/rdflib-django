@@ -31,13 +31,13 @@ class URIFieldCreator(object):
         assert obj is not None
 
         identifier = obj.__dict__[self.field.name]
-        if not identifier:
-            return None
-
         uri_type = getattr(obj, self.type_name)
 
         if uri_type == TYPE_BNODE:
-            return BNode(identifier)
+            if identifier:
+                return BNode(identifier)
+            else:
+                return BNode()
 
         if uri_type == TYPE_URIREF:
             return URIRef(identifier)
@@ -60,7 +60,7 @@ class URIFieldCreator(object):
         elif value is None:
             setattr(obj, self.type_name, None)
             obj.__dict__[self.field.name] = None
-        elif isinstance(value, unicode):
+        elif isinstance(value, basestring):
             obj.__dict__[self.field.name] = value
         else:
             raise TypeError("Cannot set URI to value {0} of type {1}".format(value, value.__class__))
@@ -77,11 +77,9 @@ class URIField(models.CharField):
         super(URIField, self).__init__(*args, **kwargs)
 
     def contribute_to_class(self, cls, name):
-        type_field = models.IntegerField(
+        type_field = models.SmallIntegerField(
             choices=((TYPE_URIREF, "URI"), (TYPE_BNODE, "Blank Node"), (TYPE_GRAPH, "Graph")),
-            editable=False,
-            null=True,
-            blank=True
+            null=False,
         )
         type_field.creation_counter = self.creation_counter
 

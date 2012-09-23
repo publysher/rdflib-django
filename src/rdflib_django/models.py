@@ -20,6 +20,9 @@ class Store(models.Model):
     id = UUIDField(verbose_name="ID", primary_key=True)
     identifier = models.CharField(max_length=200, unique=True)
 
+    def __unicode__(self):
+        return u"{0}".format(self.identifier)
+
 
 class ContextRef(models.Model):
     """
@@ -27,10 +30,16 @@ class ContextRef(models.Model):
     """
 
     id = UUIDField(verbose_name="ID", primary_key=True)
-    identifier = fields.URIField(max_length=200, unique=True)
+    identifier = fields.URIField(max_length=200)
+    store = models.ForeignKey(Store)
+
+    class Meta:
+        verbose_name = "Context"
+        verbose_name_plural = "Contexts"
+        unique_together = ('store', 'identifier')
 
     def __unicode__(self):
-        return u"{0}".format(self.identifier)
+        return u"{0} in {1}".format(self.identifier, self.store)
 
 
 class AbstractStatement(models.Model):

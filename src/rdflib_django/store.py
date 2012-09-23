@@ -91,14 +91,13 @@ class DjangoStore(rdflib.store.Store):
         """
         if self.identifier == DEFAULT_STORE or create:
             self.store = models.Store.objects.get_or_create(identifier=self.identifier)[0]
-            self.default_context = models.ContextRef.objects.get_or_create(identifier=DEFAULT_CONTEXT)[0]
         else:
             try:
                 self.store = models.Store.objects.get(identifier=self.identifier)
-                self.default_context = models.ContextRef.objects.get(identifier=DEFAULT_CONTEXT)
             except models.Store.DoesNotExist:
                 return NO_STORE
 
+        self.default_context = models.ContextRef.objects.get_or_create(identifier=DEFAULT_CONTEXT, store=self.store)[0]
         return VALID_STORE
 
     def destroy(self, configuration=None):
@@ -126,7 +125,7 @@ class DjangoStore(rdflib.store.Store):
             return self.default_context
         else:
             identifier = context.identifier if hasattr(context, 'identifier') else unicode(context)
-            return models.ContextRef.objects.get(identifier=identifier)
+            return models.ContextRef.objects.get(identifier=identifier, store=self.store)
 
     def _get_or_create_context_ref(self, context):
         """
@@ -136,7 +135,7 @@ class DjangoStore(rdflib.store.Store):
             return self.default_context
         else:
             identifier = context.identifier if hasattr(context, 'identifier') else unicode(context)
-            return models.ContextRef.objects.get_or_create(identifier=identifier)[0]
+            return models.ContextRef.objects.get_or_create(identifier=identifier, store=self.store)[0]
 
     def add(self, (s, p, o), context, quoted=False):
         """

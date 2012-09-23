@@ -26,17 +26,24 @@ clean:
 	rm -f rdflib_django.db
 	
 
-cleandev:	$(DJANGO) clean
+db:	$(DJANGO)
+	$(DJANGO) syncdb --noinput
+
+
+superuser:	$(DJANGO) db
+	$(DJANGO) createsuperuser --username=$(USER) --email=$(EMAIL) 
+
+
+prepare:	clean db superuser
+
+
+cleandev:	$(DJANGO) clean db 
 	$(DJANGO) syncdb --noinput
 	$(MAKE) dev
 
 
-dev:	$(DJANGO)
+dev:	$(DJANGO) 
 	$(DJANGO) runserver
-
-
-superuser:	$(DJANGO)
-	$(DJANGO) createsuperuser --username=$(USER) --email=$(EMAIL) 
 
 
 check:	$(TEST) $(FLAKE8) $(PYLINT)
