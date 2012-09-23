@@ -6,8 +6,8 @@ from django.core.management.base import BaseCommand, CommandError
 import sys
 from django.db import transaction
 from rdflib.graph import Graph
-from rdflib.term import URIRef
-from rdflib_django.store import DjangoStore
+from rdflib.term import URIRef, BNode
+from rdflib_django import utils
 
 
 class Command(BaseCommand):
@@ -59,16 +59,8 @@ Examples:
         if info:
             print("Parsed {0} triples".format(len(intermediate)))
 
-        if store_id:
-            store = DjangoStore(configuration=None, identifier=store_id)
-        else:
-            store = DjangoStore(configuration=None)
-
-        if context_id:
-            graph = Graph(store=store, identifier=URIRef(context_id))
-        else:
-            graph = Graph(store=store)
-        graph.open(configuration=None)
+        identifier = URIRef(context_id) if context_id else BNode()
+        graph = utils.get_named_graph(identifier, store_id=store_id)
 
         if info:
             print("Storing {0} triples".format(len(graph)))

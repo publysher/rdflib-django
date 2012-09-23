@@ -67,11 +67,11 @@ class DjangoStore(rdflib.store.Store):
     transaction_aware = False
 
     def __init__(self, configuration=None, identifier=DEFAULT_STORE):
-        super(DjangoStore, self).__init__(configuration, identifier)
         self.identifier = identifier
         self.store = None
         self.default_context = None
-        if identifier == DEFAULT_STORE:
+        super(DjangoStore, self).__init__(configuration, identifier)
+        if self.identifier == DEFAULT_STORE:
             self.open(configuration, create=True)
 
     def open(self, configuration=None, create=False):
