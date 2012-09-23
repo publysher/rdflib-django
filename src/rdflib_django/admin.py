@@ -27,8 +27,8 @@ class StatementAdmin(admin.ModelAdmin):
     Admin module for Statements.
     """
 
-    list_display = ('subject', 'object', 'predicate', 'store')
-    list_filter = ('store', 'context_refs')
+    list_display = ('subject', 'predicate', 'object', 'store')
+    list_filter = ('store', 'context_refs', 'predicate')
 
 
 class LiteralStatementAdmin(admin.ModelAdmin):
@@ -36,8 +36,8 @@ class LiteralStatementAdmin(admin.ModelAdmin):
     Admin module for Literal statements.
     """
 
-    list_display = ('subject', 'object', 'predicate', 'store')
-    list_filter = ('store', 'context_refs')
+    list_display = ('subject', 'predicate', 'object', 'store')
+    list_filter = ('store', 'context_refs', 'predicate')
 
 
 admin.site.register(models.Store, StoreAdmin)

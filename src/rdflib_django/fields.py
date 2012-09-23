@@ -71,6 +71,8 @@ class URIField(models.CharField):
     Field for storing either URIRefs or BNodes.
     """
 
+    description = "Stores URIs, blank nodes and graph references."
+
     def __init__(self, *args, **kwargs):
         if not 'max_length' in kwargs:
             kwargs['max_length'] = 1024
@@ -110,6 +112,9 @@ class URIField(models.CharField):
             if isinstance(value, BNode):
                 return value
 
+            if isinstance(value, basestring):
+                return unicode(value)
+
         raise ValueError(self, lookup_type, value)
 #        return super(URIField, self).get_prep_lookup(lookup_type, value)
 
@@ -120,6 +125,7 @@ class LiteralField(models.TextField):
     """
 
     __metaclass__ = models.SubfieldBase
+    description = "Field for storing Literals, including their type and language"
 
     def to_python(self, value):
         if isinstance(value, Literal):
@@ -130,8 +136,14 @@ class LiteralField(models.TextField):
             raise ValueError("Wrong value: {0}".format(value))
         return Literal(parts[0], parts[1] or None, parts[2] or None)
 
+    def value_to_string(self, obj):
+        value = self._get_val_from_obj(obj)
+        return self.get_prep_value(value)
+
     def get_prep_value(self, value):
         if not isinstance(value, Literal):
             raise TypeError("Value {0} has the wrong type: {1}".format(value, value.__class__))
 
         return unicode(value) + "^^" + (value.language or '') + "^^" + (value.datatype or '')
+
+
