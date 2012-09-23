@@ -1,22 +1,40 @@
-zoowizard-rdf
+rdflib-django
 =============
 
-Manages the RDF repositories for [Zoo Wizard](http://zoowizard.eu).
+A store implementation for [rdflib](http://pypi.python.org/pypi/rdflib/) that uses Django as its backend. 
 
-The current version creates an initial RDF datasource for the http://www.zoochat.com/zoos/ list of zoos.
+The current implementation is context-aware but not formula-aware. Furthermore, performance 
+has not yet been considered. 
 
-For more information, read [My Blog](http://blog.publysher.nl/2012/08/using-rdf-to-populate-zoowizard-case.html)
+The implementation assumes that contexts are used for named graphs. 
 
+Quick start
+-----------
 
-Setup
------
+Add the `rdflib-django` sources to your project, and add `rdflib_django` to your `INSTALLED_APPS` in `settings.py`. 
 
-Bootstrap the project with 
+You can now use the following examples to obtain a graph. 
 
-	python bootstrap.py && ./bin/buildout
+Getting a graph using rdflib's store API:
 
-Then, use the following Makefile targets:
+	from rdflib import Graph
+	graph = Graph('Django')
 
-    make all        # create a fully published dataset archive
-    make dataclean  # remove all generated files
+This example will give you a graph identified by a blank node within the default store. 
 
+Getting a conjunctive graph using rdflib's store API:
+
+	from rdflib import ConjunctiveGraph
+	graph = ConjunctiveGraph('Django')
+
+This example will give you a conjunctive graph in the default store.
+
+Getting a named graph using `django_rdflib`'s API:
+
+	from django_rdflib import utils
+	graph = utils.get_named_graph('http://example.com')
+
+License
+-------
+
+`rdflib-django` is licensed under the BSD license. 
