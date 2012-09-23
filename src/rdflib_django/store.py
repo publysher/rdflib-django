@@ -5,12 +5,12 @@ import itertools
 import logging
 import rdflib
 from rdflib.store import VALID_STORE, NO_STORE
-from rdflib.term import Literal, Identifier, URIRef
+from rdflib.term import Literal, Identifier, BNode
 from rdflib_django import models
 
 
-DEFAULT_STORE = "rdflib_django.store.DEFAULT_STORE"      # self-referentiality is so nice
-DEFAULT_CONTEXT = URIRef("rdflib_django.store.DEFAULT_CONTEXT")
+DEFAULT_STORE = "Default Store"
+DEFAULT_CONTEXT = BNode("Default Context")
 
 
 log = logging.getLogger(__name__)

@@ -23,6 +23,9 @@ class Store(models.Model):
     def __unicode__(self):
         return u"{0}".format(self.identifier)
 
+    def triple_count(self):
+        return Statement.objects.filter(store=self).count() + LiteralStatement.objects.filter(store=self).count()
+
 
 class ContextRef(models.Model):
     """
@@ -40,6 +43,10 @@ class ContextRef(models.Model):
 
     def __unicode__(self):
         return u"{0} in {1}".format(self.identifier, self.store)
+
+    def triple_count(self):
+        return Statement.objects.filter(store=self.store, context_refs=self).count() + \
+               LiteralStatement.objects.filter(store=self.store, context_refs=self).count()
 
 
 class AbstractStatement(models.Model):
