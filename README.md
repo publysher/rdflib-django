@@ -37,4 +37,4 @@ Getting a named graph using `django_rdflib`'s API:
 License
 -------
 
-`rdflib-django` is licensed under the BSD license. 
+`rdflib-django` is licensed under the [MIT license](https://raw.github.com/publysher/rdflib-django/master/LICENSE). 
