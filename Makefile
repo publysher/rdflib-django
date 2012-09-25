@@ -1,6 +1,7 @@
 .PHONY:	check clean cleandev dev superuser all tools
 
 EMAIL = $(shell git config --get user.email)
+BUILDOUT = ./bin/buildout
 DJANGO = ./bin/django
 FLAKE8 = ./bin/flake8
 PYLINT = ./bin/pylint
@@ -8,22 +9,23 @@ TEST   = ./bin/test
 
 all:	check cleandev
 
-tools:	bin/buildout buildout.cfg
+tools:	$(BUILDOUT) buildout.cfg
 	find bin -type f ! -name buildout -exec rm {} + 
-	bin/buildout 
+	$(BUILDOUT)
 
 
 bin/buildout:
 	python bootstrap.py
 
 
-bin/%:	bin/buildout buildout.cfg
+bin/%:	$(BUILDOUT) buildout.cfg
 	$(MAKE) tools
 
 
 clean:
 	find . -type f -name \*.py[co] -exec rm {} +
 	rm -f rdflib_django.db
+	rm -rf dist
 	
 
 db:	$(DJANGO)
@@ -50,3 +52,7 @@ check:	$(TEST) $(FLAKE8) $(PYLINT)
 	$(TEST)
 	$(FLAKE8)
 	$(PYLINT)
+
+deploy: $(BUILDOUT) clean check
+	$(BUILDOUT) setup . sdist register upload 
+
