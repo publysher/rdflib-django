@@ -12,14 +12,16 @@ setup(
     license = 'MIT',
     description = "Store implementation for RDFlib using Django models as its backend",
     long_description = read('README.md'),
+    keywords = 'django rdf rdflib store', 
 
     author = 'Yigal Duppen',
     author_email = 'yigal@publysher.nl',
 
     packages = find_packages('src'),
     package_dir = {'': 'src'},
+    zip_safe = True,
 
-    install_requires = ['setuptools', 'rdflib'],
+    install_requires = ['rdflib>=3.2.1'],
 
     classifiers = [
         'Development Status :: 3 - Alpha',

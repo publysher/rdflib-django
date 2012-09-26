@@ -25,7 +25,7 @@ bin/%:	$(BUILDOUT) buildout.cfg
 clean:
 	find . -type f -name \*.py[co] -exec rm {} +
 	rm -f rdflib_django.db
-	rm -rf dist
+	rm -rf dist/ build/
 	
 
 db:	$(DJANGO)
@@ -54,5 +54,5 @@ check:	$(TEST) $(FLAKE8) $(PYLINT)
 	$(PYLINT)
 
 deploy: $(BUILDOUT) clean check
-	$(BUILDOUT) setup . sdist register upload 
+	$(BUILDOUT) setup . register sdist bdist_egg upload 
 
