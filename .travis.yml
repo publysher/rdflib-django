@@ -2,4 +2,13 @@ language: python
 python: 
   - "2.7"
 
-script: make check
+install:
+  - "pip install -r requirements.txt --use-mirrors"
+  - "buildout"
+
+script:
+  - "bin/test"
+  - "bin/flake8"
+  - "bin/pylint"
+
+
