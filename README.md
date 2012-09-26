@@ -8,6 +8,8 @@ has not yet been considered.
 
 The implementation assumes that contexts are used for named graphs. 
 
+[![Build Status](https://secure.travis-ci.org/publysher/rdflib-django.png)](http://travis-ci.org/publysher/rdflib-django)
+
 Quick start
 -----------
 
