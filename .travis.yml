@@ -4,7 +4,7 @@ python:
 
 install:
   - "pip install -r requirements.txt --use-mirrors"
-  - "buildout -o"
+  - "buildout"
 
 script:
   - "bin/test"
