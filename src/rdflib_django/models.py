@@ -86,7 +86,7 @@ class Statement(AbstractStatement):
     """
 
     object = fields.URIField("Object", null=True, db_index=True)
-    context_refs = models.ManyToManyField(ContextRef, verbose_name="Context(s)")
+    context_refs = models.ManyToManyField(ContextRef, verbose_name="Context(s)", db_index=True)
 
     class Meta:
         unique_together = ('store', 'subject', 'predicate', 'object')
@@ -98,7 +98,7 @@ class LiteralStatement(AbstractStatement):
     """
 
     object = fields.LiteralField("Object", null=True, db_index=True)
-    context_refs = models.ManyToManyField(ContextRef, verbose_name="Context(s)")
+    context_refs = models.ManyToManyField(ContextRef, verbose_name="Context(s)", db_index=True)
 
     class Meta:
         unique_together = ('store', 'subject', 'predicate', 'object')
