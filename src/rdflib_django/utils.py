@@ -21,7 +21,7 @@ def get_conjunctive_graph(store_id=None):
     return graph
 
 
-def get_named_graph(identifier, store_id=DEFAULT_STORE):
+def get_named_graph(identifier, store_id=DEFAULT_STORE, create=True):
     """
     Returns an open named graph.
     """
@@ -30,6 +30,6 @@ def get_named_graph(identifier, store_id=DEFAULT_STORE):
 
     store = DjangoStore(store_id)
     graph = Graph(store, identifier=identifier)
-    if graph.open(None) != VALID_STORE:
+    if graph.open(None, create=create) != VALID_STORE:
         raise ValueError("The store identified by {0} is not a valid store".format(store_id))
     return graph
