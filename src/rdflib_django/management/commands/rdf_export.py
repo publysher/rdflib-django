@@ -2,7 +2,7 @@
 Management command for exporting RDF from the store.
 """
 from optparse import make_option
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 import sys
 from rdflib.term import URIRef
 from rdflib_django import utils
