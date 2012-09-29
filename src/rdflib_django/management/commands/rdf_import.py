@@ -12,7 +12,7 @@ from rdflib_django import utils
 
 class Command(BaseCommand):
     """
-    The actual command.
+    Command object for importing RDF.
     """
 
     option_list = BaseCommand.option_list + (
@@ -31,9 +31,9 @@ class Command(BaseCommand):
     help = """Imports an RDF resource.
 
 Examples:
-    {0} rdf_parse my_file.rdf
-    {0} rdf_parse --format n3 my_file.n3
-    {0} rdf_parse --context http://zoowizard.eu http://zoowizard.eu/datasource/zoochat/294
+    {0} rdf_import my_file.rdf
+    {0} rdf_import --format n3 my_file.n3
+    {0} rdf_import --context http://zoowizard.eu http://zoowizard.eu/datasource/zoochat/294
     """.format(sys.argv[0])
     args = 'file-or-resource'
 
@@ -63,7 +63,7 @@ Examples:
         graph = utils.get_named_graph(identifier, store_id=store_id)
 
         if info:
-            print("Storing {0} triples".format(len(graph)))
+            print("Storing {0} triples".format(len(intermediate)))
         for triple in intermediate:
             graph.add(triple)
         if info:
