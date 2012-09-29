@@ -8,7 +8,7 @@ Furthermore, performance has not yet been considered.
 
 The implementation assumes that contexts are used for named graphs.
 
-`|Build Status|`_
+.. image:: https://secure.travis-ci.org/publysher/rdflib-django.png
 
 Quick start
 -----------
@@ -73,9 +73,5 @@ License
 ``rdflib-django`` is licensed under the `MIT license`_.
 
 .. _rdflib: http://pypi.python.org/pypi/rdflib/
-.. _|image1|: http://travis-ci.org/publysher/rdflib-django
 .. _MIT license: https://raw.github.com/publysher/rdflib-django/master/LICENSE
 
-.. |Build
-Status| image:: https://secure.travis-ci.org/publysher/rdflib-django.png
-.. |image1| image:: https://secure.travis-ci.org/publysher/rdflib-django.png

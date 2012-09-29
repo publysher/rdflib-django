@@ -11,7 +11,7 @@ setup(
     url = "http://github.com/publysher/rdflib-django",
     license = 'MIT',
     description = "Store implementation for RDFlib using Django models as its backend",
-    long_description = read('README.md'),
+    long_description = read('README.rst'),
     keywords = 'django rdf rdflib store', 
 
     author = 'Yigal Duppen',
