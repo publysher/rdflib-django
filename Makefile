@@ -58,8 +58,8 @@ snapshot:	$(BUILDOUT) clean check
 	$(BUILDOUT) setup . egg_info -b".dev-`date +'%Y%m%d%H%M'`" sdist bdist_egg 
 
 
-deploy-snapshot:	snapshot
-	$(BUILDOUT) setup . register upload
+deploy-snapshot:	$(BUILDOUT) clean check
+	$(BUILDOUT) setup . egg_info -b".dev-`date +'%Y%m%d%H%M'`" sdist bdist_egg register upload
     
 
 deploy: $(BUILDOUT) clean check

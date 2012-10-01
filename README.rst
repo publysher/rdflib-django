@@ -18,7 +18,7 @@ Add the ``rdflib-django`` sources to your project, and add
 
 You can now use the following examples to obtain a graph.
 
-Getting a graph using rdflib’s store API:
+Getting a graph using rdflib's store API:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
@@ -30,7 +30,7 @@ Getting a graph using rdflib’s store API:
 This example will give you a graph identified by a blank node within the
 default store.
 
-Getting a conjunctive graph using rdflib’s store API:
+Getting a conjunctive graph using rdflib's store API:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
@@ -40,26 +40,26 @@ Getting a conjunctive graph using rdflib’s store API:
 
 This example will give you a conjunctive graph in the default store.
 
-Getting a named graph using ``django_rdflib``\ ’s API:
+Getting a named graph using rdflib-django's API:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-    from django_rdflib import utils
+    from rdflib_django import utils
     graph = utils.get_named_graph('http://example.com')
 
-Getting the conjunctive graph using ``django_rdflib``\ ’s API:
+Getting the conjunctive graph using rdflib-django's API:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-    from django_rdflib import utils
+    from rdflib_django import utils
     graph = utils.get_conjunctive_graph()
 
 Management commands
 -------------------
 
-``rdflib_django`` includes two management commands to import and export
+``rdflib-django`` includes two management commands to import and export
 RDF:
 
 ::
