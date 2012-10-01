@@ -3,12 +3,9 @@ python:
   - "2.7"
 
 install:
-  - "python bootstrap.py"
-  - "bin/buildout"
+  - "make tools"
 
 script:
-  - "bin/test"
-  - "bin/flake8"
-  - "bin/pylint"
+  - "make snapshot"
 
 

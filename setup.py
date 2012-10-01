@@ -7,7 +7,7 @@ def read(fname):
 
 setup(
     name = "rdflib-django",
-    version = "0.1.1",
+    version = "0.2",
     url = "http://github.com/publysher/rdflib-django",
     license = 'MIT',
     description = "Store implementation for RDFlib using Django models as its backend",
