@@ -19,6 +19,7 @@ setup(
 
     packages = find_packages('src'),
     package_dir = {'': 'src'},
+    package_data = {'': ['*.rst']},
     zip_safe = True,
 
     install_requires = ['rdflib>=3.2.1'],
@@ -27,7 +28,7 @@ setup(
         'Development Status :: 3 - Alpha',
         'Framework :: Django',
         'Intended Audience :: Developers',
-	'License :: OSI Approved :: MIT License',
+	    'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
