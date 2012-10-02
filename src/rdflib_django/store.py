@@ -3,10 +3,12 @@ Essential implementation of the Store interface defined by RDF lib.
 """
 import itertools
 import logging
+from django.db.utils import IntegrityError
 import rdflib
 from rdflib.store import VALID_STORE, NO_STORE
 from rdflib.term import Literal, Identifier, BNode
 from rdflib_django import models
+from rdflib_django.models import Namespace
 
 
 DEFAULT_STORE = "Default Store"
@@ -229,3 +231,31 @@ class DjangoStore(rdflib.store.Store):
     def contexts(self, triple=None):
         for c in models.ContextRef.objects.all():
             yield c.identifier
+
+    def bind(self, prefix, namespace):
+        try:
+            ns = Namespace(prefix=prefix, uri=namespace, store=self.store)
+            ns.save()
+        except IntegrityError:
+            ns = Namespace.objects.filter(store=self.store, prefix=prefix)
+            ns = Namespace.objects.filter(store=self.store, uri=namespace)
+            ns.delete()
+            self.bind(prefix, namespace)
+
+    def prefix(self, namespace):
+        try:
+            ns = Namespace.objects.get(store=self.store, uri=namespace)
+            return ns.prefix
+        except Namespace.DoesNotExist:
+            return None
+
+    def namespace(self, prefix):
+        try:
+            ns = Namespace.objects.get(store=self.store, prefix=prefix)
+            return ns.uri
+        except Namespace.DoesNotExist:
+            return None
+
+    def namespaces(self):
+        for ns in Namespace.objects.filter(store=self.store):
+            yield ns.prefix, ns.uri

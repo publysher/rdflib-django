@@ -102,3 +102,20 @@ class LiteralStatement(AbstractStatement):
 
     class Meta:
         unique_together = ('store', 'subject', 'predicate', 'object')
+
+
+class Namespace(models.Model):
+    """
+    A namespace definition.
+    """
+    id = UUIDField("ID", primary_key=True)
+    store = models.ForeignKey(Store)
+
+    prefix = models.CharField(max_length=50, verbose_name="Prefix", db_index=True)
+    uri = models.CharField(max_length=500, verbose_name="URI", db_index=True)
+
+    class Meta:
+        unique_together = (
+            ('store', 'prefix'),
+            ('store', 'uri'),
+        )
