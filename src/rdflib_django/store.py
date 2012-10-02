@@ -15,10 +15,11 @@ DEFAULT_STORE = "Default Store"
 GLOBAL_CONTEXT = BNode("Global Context")
 
 
-XML_NAMESPACE = ("xml", u"http://www.w3.org/XML/1998/namespace")
-RDF_NAMESPACE = ("rdf", u"http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-RDFS_NAMESPACE = ("rdfs", u"http://www.w3.org/2000/01/rdf-schema#")
-DEFAULT_NAMESPACES = (XML_NAMESPACE, RDF_NAMESPACE, RDFS_NAMESPACE)
+DEFAULT_NAMESPACES = (
+    ("xml", u"http://www.w3.org/XML/1998/namespace"),
+    ("rdf", u"http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
+    ("rdfs", u"http://www.w3.org/2000/01/rdf-schema#")
+)
 
 
 log = logging.getLogger(__name__)
@@ -101,6 +102,13 @@ class DjangoStore(rdflib.store.Store):
         True
         """
         self.default_context = models.ContextRef.objects.get_or_create(identifier=GLOBAL_CONTEXT)[0]
+#        for prefix, uri in DEFAULT_NAMESPACES:
+#            if not Namespace.objects.filter(prefix=prefix).count():
+#                try:
+#                    Namespace(prefix=prefix, uri=uri).save()
+#                except IntegrityError:
+#                    raise SystemError("Someone registered namespace %s under prefix %s" % (uri, self.prefix(uri)))
+
         return VALID_STORE
 
     def destroy(self, configuration=None):
@@ -234,7 +242,7 @@ class DjangoStore(rdflib.store.Store):
 
     def bind(self, prefix, namespace):
         for ns in DEFAULT_NAMESPACES:
-            if ns[0] == prefix or ns[1] == namespace:
+            if ns[0] == prefix or unicode(ns[1]) == unicode(namespace):
                 return
 
         try:
@@ -246,10 +254,6 @@ class DjangoStore(rdflib.store.Store):
             Namespace(prefix=prefix, uri=namespace).save()
 
     def prefix(self, namespace):
-        for ns in DEFAULT_NAMESPACES:
-            if namespace == ns[1]:
-                return ns[0]
-
         try:
             ns = Namespace.objects.get(uri=namespace)
             return ns.prefix
@@ -257,10 +261,6 @@ class DjangoStore(rdflib.store.Store):
             return None
 
     def namespace(self, prefix):
-        for ns in DEFAULT_NAMESPACES:
-            if prefix == ns[0]:
-                return ns[1]
-
         try:
             ns = Namespace.objects.get(prefix=prefix)
             return ns.uri
@@ -268,8 +268,5 @@ class DjangoStore(rdflib.store.Store):
             return None
 
     def namespaces(self):
-        for ns in DEFAULT_NAMESPACES:
-            yield ns
-
         for ns in Namespace.objects.all():
             yield ns.prefix, ns.uri

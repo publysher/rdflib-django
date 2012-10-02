@@ -87,7 +87,5 @@ class Namespace(models.Model):
     """
     A namespace definition.
     """
-    id = UUIDField("ID", primary_key=True)
-
-    prefix = models.CharField(max_length=50, verbose_name="Prefix", db_index=True, unique=True)
+    prefix = models.CharField(max_length=50, verbose_name="Prefix", primary_key=True)
     uri = models.CharField(max_length=500, verbose_name="URI", db_index=True, unique=True)
