@@ -15,6 +15,12 @@ DEFAULT_STORE = "Default Store"
 GLOBAL_CONTEXT = BNode("Global Context")
 
 
+XML_NAMESPACE = ("xml", u"http://www.w3.org/XML/1998/namespace")
+RDF_NAMESPACE = ("rdf", u"http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+RDFS_NAMESPACE = ("rdfs", u"http://www.w3.org/2000/01/rdf-schema#")
+DEFAULT_NAMESPACES = (XML_NAMESPACE, RDF_NAMESPACE, RDFS_NAMESPACE)
+
+
 log = logging.getLogger(__name__)
 
 
@@ -83,6 +89,7 @@ class DjangoStore(rdflib.store.Store):
         self.identifier = DEFAULT_STORE
         self.default_context = None
         super(DjangoStore, self).__init__(configuration, identifier)
+        self.open()
 
     def open(self, configuration=None, create=False):
         """
@@ -226,6 +233,10 @@ class DjangoStore(rdflib.store.Store):
             yield c.identifier
 
     def bind(self, prefix, namespace):
+        for ns in DEFAULT_NAMESPACES:
+            if ns[0] == prefix or ns[1] == namespace:
+                return
+
         try:
             ns = Namespace(prefix=prefix, uri=namespace)
             ns.save()
@@ -235,6 +246,10 @@ class DjangoStore(rdflib.store.Store):
             Namespace(prefix=prefix, uri=namespace).save()
 
     def prefix(self, namespace):
+        for ns in DEFAULT_NAMESPACES:
+            if namespace == ns[1]:
+                return ns[0]
+
         try:
             ns = Namespace.objects.get(uri=namespace)
             return ns.prefix
@@ -242,6 +257,10 @@ class DjangoStore(rdflib.store.Store):
             return None
 
     def namespace(self, prefix):
+        for ns in DEFAULT_NAMESPACES:
+            if prefix == ns[0]:
+                return ns[1]
+
         try:
             ns = Namespace.objects.get(prefix=prefix)
             return ns.uri
@@ -249,5 +268,8 @@ class DjangoStore(rdflib.store.Store):
             return None
 
     def namespaces(self):
+        for ns in DEFAULT_NAMESPACES:
+            yield ns
+
         for ns in Namespace.objects.all():
             yield ns.prefix, ns.uri
