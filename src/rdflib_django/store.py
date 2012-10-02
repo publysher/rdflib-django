@@ -101,14 +101,6 @@ class DjangoStore(rdflib.store.Store):
         >>> g.open(configuration=None, create=False) == rdflib.store.VALID_STORE
         True
         """
-        self.default_context = models.ContextRef.objects.get_or_create(identifier=GLOBAL_CONTEXT)[0]
-#        for prefix, uri in DEFAULT_NAMESPACES:
-#            if not Namespace.objects.filter(prefix=prefix).count():
-#                try:
-#                    Namespace(prefix=prefix, uri=uri).save()
-#                except IntegrityError:
-#                    raise SystemError("Someone registered namespace %s under prefix %s" % (uri, self.prefix(uri)))
-
         return VALID_STORE
 
     def destroy(self, configuration=None):
@@ -125,8 +117,9 @@ class DjangoStore(rdflib.store.Store):
         >>> g.open(configuration=None, create=False) == rdflib.store.VALID_STORE
         True
         """
-        models.ContextRef.objects.all().delete()
         models.Statement.objects.all().delete()
+        models.LiteralStatement.objects.all().delete()
+        models.ContextRef.objects.exclude(identifier=GLOBAL_CONTEXT).delete()
 
     def _get_context_ref(self, context):
         """
