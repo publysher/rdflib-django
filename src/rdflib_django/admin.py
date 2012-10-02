@@ -31,6 +31,14 @@ class LiteralStatementAdmin(admin.ModelAdmin):
     list_filter = ('context_refs', 'predicate')
 
 
+class NamespaceAdmin(admin.ModelAdmin):
+    """
+    Admin module for managing namespaces.
+    """
+    list_display = ('prefix', 'uri')
+
+
 admin.site.register(models.ContextRef, ContextRefAdmin)
 admin.site.register(models.Statement, StatementAdmin)
 admin.site.register(models.LiteralStatement, LiteralStatementAdmin)
+admin.site.register(models.Namespace, NamespaceAdmin)
