@@ -5,7 +5,7 @@ import itertools
 import logging
 from django.db.utils import IntegrityError
 import rdflib
-from rdflib.store import VALID_STORE, NO_STORE
+from rdflib.store import VALID_STORE
 from rdflib.term import Literal, Identifier, BNode
 from rdflib_django import models
 from rdflib_django.models import Namespace
@@ -56,11 +56,19 @@ class DjangoStore(rdflib.store.Store):
     >>> g.store.formula_aware
     False
 
-    The implementation provides a default store with the identifier DEFAULT_STORE. This store
+    The implementation provides a single store with the identifier DEFAULT_STORE. This store
     is always present and needs not be opened.
 
     >>> g.store.identifier
     'Default Store'
+
+    Using other stores is not allowed
+
+    >>> g = DjangoStore(identifier='HelloWorld')
+    Traceback (most recent call last):
+        ...
+    ValueError: multiple stores are not allowed
+
 
     """
 
@@ -69,12 +77,12 @@ class DjangoStore(rdflib.store.Store):
     transaction_aware = False
 
     def __init__(self, configuration=None, identifier=DEFAULT_STORE):
-        self.identifier = identifier
-        self.store = None
+        if identifier and identifier != DEFAULT_STORE:
+            raise ValueError("multiple stores are not allowed")
+
+        self.identifier = DEFAULT_STORE
         self.default_context = None
         super(DjangoStore, self).__init__(configuration, identifier)
-        if self.identifier == DEFAULT_STORE:
-            self.open(configuration, create=True)
 
     def open(self, configuration=None, create=False):
         """
@@ -84,40 +92,26 @@ class DjangoStore(rdflib.store.Store):
         >>> g = rdflib.Graph('Django')
         >>> g.open(configuration=None, create=False) == rdflib.store.VALID_STORE
         True
-        >>> store = DjangoStore(identifier='hello-world')
-        >>> g = rdflib.Graph(store=store)
-        >>> g.open(configuration=None, create=False) == rdflib.store.NO_STORE
-        True
-        >>> g.open(configuration=None, create=True) == rdflib.store.VALID_STORE
-        True
         """
-        if self.identifier == DEFAULT_STORE or create:
-            self.store = models.Store.objects.get_or_create(identifier=self.identifier)[0]
-        else:
-            try:
-                self.store = models.Store.objects.get(identifier=self.identifier)
-            except models.Store.DoesNotExist:
-                return NO_STORE
-
-        self.default_context = models.ContextRef.objects.get_or_create(identifier=GLOBAL_CONTEXT, store=self.store)[0]
+        self.default_context = models.ContextRef.objects.get_or_create(identifier=GLOBAL_CONTEXT)[0]
         return VALID_STORE
 
     def destroy(self, configuration=None):
         """
         Completely destroys a store and all the contexts and triples in the store.
 
-        >>> store = DjangoStore(identifier='destroy-me')
+        >>> store = DjangoStore()
         >>> g = rdflib.Graph(store=store)
         >>> g.open(configuration=None, create=True) == rdflib.store.VALID_STORE
         True
         >>> g.open(configuration=None, create=False) == rdflib.store.VALID_STORE
         True
         >>> g.destroy(configuration=None)
-        >>> g.open(configuration=None, create=False) == rdflib.store.NO_STORE
+        >>> g.open(configuration=None, create=False) == rdflib.store.VALID_STORE
         True
         """
-        if self.store:
-            self.store.delete()
+        models.ContextRef.objects.all().delete()
+        models.Statement.objects.all().delete()
 
     def _get_context_ref(self, context):
         """
@@ -127,7 +121,7 @@ class DjangoStore(rdflib.store.Store):
             return self.default_context
         else:
             identifier = context.identifier if hasattr(context, 'identifier') else unicode(context)
-            return models.ContextRef.objects.get(identifier=identifier, store=self.store)
+            return models.ContextRef.objects.get(identifier=identifier)
 
     def _get_or_create_context_ref(self, context):
         """
@@ -137,7 +131,7 @@ class DjangoStore(rdflib.store.Store):
             return self.default_context
         else:
             identifier = context.identifier if hasattr(context, 'identifier') else unicode(context)
-            return models.ContextRef.objects.get_or_create(identifier=identifier, store=self.store)[0]
+            return models.ContextRef.objects.get_or_create(identifier=identifier)[0]
 
     def add(self, (s, p, o), context, quoted=False):
         """
@@ -164,7 +158,6 @@ class DjangoStore(rdflib.store.Store):
             subject=s,
             predicate=p,
             object=o,
-            store=self.store
         )[0]
         context_ref = self._get_or_create_context_ref(context)
         if context_ref:
@@ -234,28 +227,27 @@ class DjangoStore(rdflib.store.Store):
 
     def bind(self, prefix, namespace):
         try:
-            ns = Namespace(prefix=prefix, uri=namespace, store=self.store)
+            ns = Namespace(prefix=prefix, uri=namespace)
             ns.save()
         except IntegrityError:
-            ns = Namespace.objects.filter(store=self.store, prefix=prefix)
-            ns = Namespace.objects.filter(store=self.store, uri=namespace)
-            ns.delete()
-            self.bind(prefix, namespace)
+            Namespace.objects.filter(prefix=prefix).delete()
+            Namespace.objects.filter(uri=namespace).delete()
+            Namespace(prefix=prefix, uri=namespace).save()
 
     def prefix(self, namespace):
         try:
-            ns = Namespace.objects.get(store=self.store, uri=namespace)
+            ns = Namespace.objects.get(uri=namespace)
             return ns.prefix
         except Namespace.DoesNotExist:
             return None
 
     def namespace(self, prefix):
         try:
-            ns = Namespace.objects.get(store=self.store, prefix=prefix)
+            ns = Namespace.objects.get(prefix=prefix)
             return ns.uri
         except Namespace.DoesNotExist:
             return None
 
     def namespaces(self):
-        for ns in Namespace.objects.filter(store=self.store):
+        for ns in Namespace.objects.all():
             yield ns.prefix, ns.uri

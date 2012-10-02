@@ -1,33 +1,15 @@
 """
 The rdflib_django implementation uses Django models to store its triples. It provides the following models:
 
-Store - A specific store. Every triples is contained in exactly one store.
 Statement - A generic triple
 LiteralStatement - A triple where the object is a literal.
-Context - A context. Every triple is contained in zero or more contexts.
+ContextRef - A context. Every triple is contained in zero or more contexts.
+Namespace - A namespace binding
 
 """
 from django.db import models
 from django_extensions.db.fields import UUIDField
 from rdflib_django import fields
-
-
-class Store(models.Model):
-    """
-    Models a single store.
-    """
-
-    id = UUIDField(verbose_name="ID", primary_key=True)
-    identifier = models.CharField(max_length=200, unique=True)
-
-    def __unicode__(self):
-        return u"{0}".format(self.identifier)
-
-    def triple_count(self):
-        """
-        The number of triples in this store.
-        """
-        return Statement.objects.filter(store=self).count() + LiteralStatement.objects.filter(store=self).count()
 
 
 class ContextRef(models.Model):
@@ -36,23 +18,21 @@ class ContextRef(models.Model):
     """
 
     id = UUIDField(verbose_name="ID", primary_key=True)
-    identifier = fields.URIField(max_length=200)
-    store = models.ForeignKey(Store)
+    identifier = fields.URIField(max_length=200, unique=True)
 
     class Meta:
         verbose_name = "Context"
         verbose_name_plural = "Contexts"
-        unique_together = ('store', 'identifier')
 
     def __unicode__(self):
-        return u"{0} in {1}".format(self.identifier, self.store)
+        return u"{0}".format(self.identifier)
 
     def triple_count(self):
         """
         The number of triples in this context.
         """
-        return Statement.objects.filter(store=self.store, context_refs=self).count() + \
-               LiteralStatement.objects.filter(store=self.store, context_refs=self).count()
+        return Statement.objects.filter(context_refs=self).count() + \
+               LiteralStatement.objects.filter(context_refs=self).count()
 
 
 class AbstractStatement(models.Model):
@@ -61,7 +41,6 @@ class AbstractStatement(models.Model):
     """
 
     id = UUIDField("ID", primary_key=True)
-    store = models.ForeignKey(Store)
 
     subject = fields.URIField("Subject", db_index=True)
     predicate = fields.URIField("Predicate", db_index=True)
@@ -89,7 +68,7 @@ class Statement(AbstractStatement):
     context_refs = models.ManyToManyField(ContextRef, verbose_name="Context(s)", db_index=True)
 
     class Meta:
-        unique_together = ('store', 'subject', 'predicate', 'object')
+        unique_together = ('subject', 'predicate', 'object')
 
 
 class LiteralStatement(AbstractStatement):
@@ -101,7 +80,7 @@ class LiteralStatement(AbstractStatement):
     context_refs = models.ManyToManyField(ContextRef, verbose_name="Context(s)", db_index=True)
 
     class Meta:
-        unique_together = ('store', 'subject', 'predicate', 'object')
+        unique_together = ('subject', 'predicate', 'object')
 
 
 class Namespace(models.Model):
@@ -109,13 +88,6 @@ class Namespace(models.Model):
     A namespace definition.
     """
     id = UUIDField("ID", primary_key=True)
-    store = models.ForeignKey(Store)
 
-    prefix = models.CharField(max_length=50, verbose_name="Prefix", db_index=True)
-    uri = models.CharField(max_length=500, verbose_name="URI", db_index=True)
-
-    class Meta:
-        unique_together = (
-            ('store', 'prefix'),
-            ('store', 'uri'),
-        )
+    prefix = models.CharField(max_length=50, verbose_name="Prefix", db_index=True, unique=True)
+    uri = models.CharField(max_length=500, verbose_name="URI", db_index=True, unique=True)
