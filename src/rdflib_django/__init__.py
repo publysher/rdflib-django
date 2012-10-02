@@ -11,4 +11,5 @@ you can create a new Graph using:
 from rdflib.plugin import register
 from rdflib.store import Store
 
+
 register('Django', Store, 'rdflib_django.store', 'DjangoStore')

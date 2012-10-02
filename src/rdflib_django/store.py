@@ -88,7 +88,8 @@ class DjangoStore(rdflib.store.Store):
             raise ValueError("multiple stores are not allowed")
 
         self.identifier = DEFAULT_STORE
-        self.default_context = None
+        self.default_context = models.ContextRef.objects.get(identifier=GLOBAL_CONTEXT)
+        self.context_cache = dict()
         super(DjangoStore, self).__init__(configuration, identifier)
         self.open()
 
@@ -127,9 +128,13 @@ class DjangoStore(rdflib.store.Store):
         """
         if context is None:
             return self.default_context
+        elif context in self.context_cache:
+            return self.context_cache.get(context)
         else:
             identifier = context.identifier if hasattr(context, 'identifier') else unicode(context)
-            return models.ContextRef.objects.get(identifier=identifier)
+            result = models.ContextRef.objects.get(identifier=identifier)
+            self.context_cache[context] = result
+            return result
 
     def _get_or_create_context_ref(self, context):
         """
@@ -137,9 +142,13 @@ class DjangoStore(rdflib.store.Store):
         """
         if context is None:
             return self.default_context
+        elif context in self.context_cache:
+            return self.context_cache.get(context)
         else:
             identifier = context.identifier if hasattr(context, 'identifier') else unicode(context)
-            return models.ContextRef.objects.get_or_create(identifier=identifier)[0]
+            result = models.ContextRef.objects.get_or_create(identifier=identifier)[0]
+            self.context_cache[context] = result
+            return result
 
     def add(self, (s, p, o), context, quoted=False):
         """
