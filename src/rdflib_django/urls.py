@@ -5,7 +5,7 @@ In development mode, this will include the admin package.
 from django.conf import settings
 from django.conf.urls import patterns, include
 
-if settings.DJANGO_RDFLIB_DEVELOP:
+if hasattr(settings, 'DJANGO_RDFLIB_DEVELOP') and getattr(settings, 'DJANGO_RDFLIB_DEVELOP'):
     from django.contrib import admin
     admin.autodiscover()
 
