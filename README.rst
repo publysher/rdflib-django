@@ -14,8 +14,20 @@ The implementation assumes that contexts are used for named graphs.
 Quick start
 -----------
 
-Add the ``rdflib-django`` sources to your project, and add
-``rdflib_django`` to your ``INSTALLED_APPS`` in ``settings.py``.
+Install rdflib-django with your package manager:
+
+::
+
+    pip install rdflib-django
+
+Add ``rdflib_django`` to your ``INSTALLED_APPS``:
+
+::
+
+    INSTALLED_APPS = (
+        # other apps
+        'rdflib_django'.
+    )
 
 You can now use the following examples to obtain a graph.
 
