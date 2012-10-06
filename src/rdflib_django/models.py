@@ -86,6 +86,15 @@ class LiteralStatement(AbstractStatement):
 class Namespace(models.Model):
     """
     A namespace definition.
+
+    In essence, a namespace consists of a prefix and a URI. However, the namespaces in rdflib_django
+    also have an extra field called '`fixed`' - this is used to mark namespaces that cannot be
+    remapped such as ``xml``, ``rdf`` and ``rdfs``.
     """
+
     prefix = models.CharField(max_length=50, verbose_name="Prefix", primary_key=True)
     uri = models.CharField(max_length=500, verbose_name="URI", db_index=True, unique=True)
+    fixed = models.BooleanField(verbose_name="Fixed", editable=False, default=False)
+
+    def __unicode__(self):
+        return "@prefix {0}: <{1}>".format(self.prefix, self.uri)
