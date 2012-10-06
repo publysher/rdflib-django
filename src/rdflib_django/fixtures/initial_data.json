@@ -27,5 +27,40 @@
   "fields": {
    "uri": "http://www.w3.org/2000/01/rdf-schema#"
   }
+ },
+ {
+  "pk": "foaf",
+  "model": "rdflib_django.namespace",
+  "fields": {
+   "uri": "http://xmlns.com/foaf/0.1/"
+  }
+ },
+ {
+  "pk": "schema",
+  "model": "rdflib_django.namespace",
+  "fields": {
+   "uri": "http://schema.org/"
+  }
+ },
+ {
+  "pk": "dcterms",
+  "model": "rdflib_django.namespace",
+  "fields": {
+   "uri": "http://purl.org/dc/terms/"
+  }
+ },
+ {
+  "pk": "void",
+  "model": "rdflib_django.namespace",
+  "fields": {
+   "uri": "http://rdfs.org/ns/void#"
+  }
+ },
+ {
+  "pk": "skos",
+  "model": "rdflib_django.namespace",
+  "fields": {
+   "uri": "http://www.w3.org/2004/02/skos/core#"
+  }
  }
 ]
