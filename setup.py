@@ -19,7 +19,6 @@ setup(
 
     packages = find_packages('src'),
     package_dir = {'': 'src'},
-    package_data = {'': ['*.rst']},
     zip_safe = True,
 
     install_requires = ['rdflib>=3.2.1'],
