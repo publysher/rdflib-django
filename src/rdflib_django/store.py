@@ -177,7 +177,7 @@ class DjangoStore(rdflib.store.Store):
             object=o,
         )[0]
         context_ref = self._get_or_create_context_ref(context)
-        if context_ref:
+        if context_ref and context_ref not in statement.context_refs.all():
             statement.context_refs.add(context_ref)
 
     def remove(self, (s, p, o), context=None):

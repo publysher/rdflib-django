@@ -17,8 +17,7 @@ class ContextRef(models.Model):
     Models a reference to a single context within a store.
     """
 
-    id = UUIDField(verbose_name="ID", primary_key=True)
-    identifier = fields.URIField(max_length=200, unique=True)
+    identifier = fields.GraphReferenceField(max_length=200, unique=True, primary_key=True)
 
     class Meta:
         verbose_name = "Context"
@@ -31,8 +30,7 @@ class ContextRef(models.Model):
         """
         The number of triples in this context.
         """
-        return Statement.objects.filter(context_refs=self).count() + \
-               LiteralStatement.objects.filter(context_refs=self).count()
+        return self.statement_set.count() + self.literalstatement_set.count()   # pylint: disable=E1101
 
 
 class AbstractStatement(models.Model):
