@@ -8,7 +8,7 @@ from rdflib.graph import Graph
 from rdflib_django.store import DjangoStore
 
 
-class SeqTestCase(unittest.TestCase):
+class SeqTest(unittest.TestCase):
     """
     Tests sequences.
     """

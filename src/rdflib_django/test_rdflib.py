@@ -8,7 +8,7 @@ from rdflib.term import URIRef, BNode
 
 
 # pylint: disable=C0111,R0915
-class GraphTestCase(test.TestCase):
+class GraphTest(test.TestCase):
     """
     Testing the basic graph functionality.
 
@@ -281,7 +281,7 @@ n3testdoc = """@prefix : <http://example.org/> .
 nttestdoc = "<http://example.org/a> <http://example.org/b> <http://example.org/c> .\n"
 
 
-class ContextTestCase(test.TestCase):
+class ContextTest(test.TestCase):
     """
     Testing different contexts.
 
@@ -312,10 +312,8 @@ class ContextTestCase(test.TestCase):
         self.graph.close()
 
     def get_context(self, identifier):
-        assert isinstance(identifier, URIRef) or\
-               isinstance(identifier, BNode), type(identifier)
-        return Graph(store=self.graph.store, identifier=identifier,
-                     namespace_manager=self)
+        assert isinstance(identifier, URIRef) or isinstance(identifier, BNode), type(identifier)
+        return Graph(store=self.graph.store, identifier=identifier, namespace_manager=self)
 
     def addStuff(self):
         tarek = self.tarek
