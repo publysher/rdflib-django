@@ -45,6 +45,26 @@ def _get_query_sets_for_object(o):
     return query_sets
 
 
+def _get_query_sets_for_object2(o):
+    """
+    Determines the correct query set based on the object.
+
+    If the object is a literal, it will return a query set over LiteralStatements.
+    If the object is a URIRef or BNode, it will return a query set over Statements.
+    If the object is unknown, it will return both the LiteralStatement and Statement query sets.
+
+    This method always returns a list of size at least one.
+    """
+    if o:
+        if isinstance(o, Literal):
+            query_sets = [models.LiteralPredicate.objects]
+        else:
+            query_sets = [models.URIPredicate.objects]
+    else:
+        query_sets = [models.URIPredicate.objects, models.LiteralPredicate.objects]
+    return query_sets
+
+
 class DjangoStore(rdflib.store.Store):
     """
     RDFlib Store implementation the uses Django Models for storage and retrieval.
@@ -169,6 +189,18 @@ class DjangoStore(rdflib.store.Store):
         assert isinstance(p, Identifier)
         assert isinstance(o, Identifier)
         assert not quoted
+
+        resource = models.Resource.objects.get_or_create(identifier=s)[0]
+        context_ref = self._get_or_create_context_ref(context)
+        if context_ref and context_ref not in resource.context_refs.all():
+            resource.context_refs.add(context_ref)
+
+        query_set = _get_query_sets_for_object2(o)[0]
+        query_set.get_or_create(
+            subject=resource,
+            predicate=p,
+            object=o
+        )
 
         query_set = _get_query_sets_for_object(o)[0]
         statement = query_set.get_or_create(

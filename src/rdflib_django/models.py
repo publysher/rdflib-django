@@ -33,6 +33,52 @@ class ContextRef(models.Model):
         return self.statement_set.count() + self.literalstatement_set.count()   # pylint: disable=E1101
 
 
+class Resource(models.Model):
+    """
+    The subject part of a triple.
+    """
+
+    identifier = fields.URIField(max_length=500, unique=True, primary_key=True)
+    context_refs = models.ManyToManyField(ContextRef, verbose_name="Contexts")
+
+    def __unicode__(self):
+        return u"{0}".format(self.identifier)
+
+
+class URIPredicate(models.Model):
+    """
+    Base class for resource predicates with a URI value.
+    """
+
+    id = UUIDField("ID", primary_key=True)
+    subject = models.ForeignKey(Resource, verbose_name="Subject", db_index=True)
+    predicate = fields.URIField("Predicate", db_index=True)
+    object = fields.URIField("Object", db_index=True)
+
+    def as_triple(self):
+        """
+        Converts this predicate to a triple.
+        """
+        return self.subject.identifier, self.predicate, self.object
+
+
+class LiteralPredicate(models.Model):
+    """
+    Base class for resource predicates with a literal value.
+    """
+
+    id = UUIDField("ID", primary_key=True)
+    subject = models.ForeignKey(Resource, verbose_name="Subject", db_index=True)
+    predicate = fields.URIField("Predicate", db_index=True)
+    object = fields.LiteralField("Object", db_index=True)
+
+    def as_triple(self):
+        """
+        Converts this predicate to a triple.
+        """
+        return self.subject.identifier, self.predicate, self.object
+
+
 class AbstractStatement(models.Model):
     """
     Base class for statements.
