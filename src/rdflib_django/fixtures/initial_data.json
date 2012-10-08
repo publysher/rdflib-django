@@ -1,13 +1,7 @@
 [
  {
-  "pk": "_:Global Context",
-  "model": "rdflib_django.contextref", 
-  "fields": {
-  }
- }, 
- {
   "pk": "xml", 
-  "model": "rdflib_django.namespace", 
+  "model": "rdflib_django.namespacemodel", 
   "fields": {
    "uri": "http://www.w3.org/XML/1998/namespace",
    "fixed": true
@@ -15,7 +9,7 @@
  }, 
  {
   "pk": "rdf", 
-  "model": "rdflib_django.namespace", 
+  "model": "rdflib_django.namespacemodel", 
   "fields": {
    "uri": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
    "fixed": true
@@ -23,7 +17,7 @@
  }, 
  {
   "pk": "rdfs", 
-  "model": "rdflib_django.namespace", 
+  "model": "rdflib_django.namespacemodel", 
   "fields": {
    "uri": "http://www.w3.org/2000/01/rdf-schema#",
    "fixed": true
@@ -31,35 +25,35 @@
  },
  {
   "pk": "foaf",
-  "model": "rdflib_django.namespace",
+  "model": "rdflib_django.namespacemodel",
   "fields": {
    "uri": "http://xmlns.com/foaf/0.1/"
   }
  },
  {
   "pk": "schema",
-  "model": "rdflib_django.namespace",
+  "model": "rdflib_django.namespacemodel",
   "fields": {
    "uri": "http://schema.org/"
   }
  },
  {
   "pk": "dcterms",
-  "model": "rdflib_django.namespace",
+  "model": "rdflib_django.namespacemodel",
   "fields": {
    "uri": "http://purl.org/dc/terms/"
   }
  },
  {
   "pk": "void",
-  "model": "rdflib_django.namespace",
+  "model": "rdflib_django.namespacemodel",
   "fields": {
    "uri": "http://rdfs.org/ns/void#"
   }
  },
  {
   "pk": "skos",
-  "model": "rdflib_django.namespace",
+  "model": "rdflib_django.namespacemodel",
   "fields": {
    "uri": "http://www.w3.org/2004/02/skos/core#"
   }

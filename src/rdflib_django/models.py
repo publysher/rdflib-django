@@ -38,8 +38,12 @@ class Resource(models.Model):
     The subject part of a triple.
     """
 
-    identifier = fields.URIField(max_length=500, unique=True, primary_key=True)
-    context_refs = models.ManyToManyField(ContextRef, verbose_name="Contexts")
+    id = UUIDField(verbose_name="ID", primary_key=True)
+    identifier = fields.URIField(max_length=500)
+    context = models.ForeignKey(ContextRef, verbose_name="Context", null=True)
+
+    class Meta:
+        unique_together = ('identifier', 'context')
 
     def __unicode__(self):
         return u"{0}".format(self.identifier)
@@ -54,6 +58,12 @@ class URIPredicate(models.Model):
     subject = models.ForeignKey(Resource, verbose_name="Subject", db_index=True)
     predicate = fields.URIField("Predicate", db_index=True)
     object = fields.URIField("Object", db_index=True)
+
+    class Meta:
+        unique_together = ('subject', 'predicate', 'object')
+
+    def __unicode__(self):
+        return u"{0}, {1}".format(self.as_triple(), self.subject.context_id)    # pylint: disable=E1101
 
     def as_triple(self):
         """
@@ -72,6 +82,12 @@ class LiteralPredicate(models.Model):
     predicate = fields.URIField("Predicate", db_index=True)
     object = fields.LiteralField("Object", db_index=True)
 
+    class Meta:
+        unique_together = ('subject', 'predicate', 'object')
+
+    def __unicode__(self):
+        return u"{0}, {1}".format(self.as_triple(), self.subject.context_id)    # pylint: disable=E1101
+
     def as_triple(self):
         """
         Converts this predicate to a triple.
@@ -79,55 +95,7 @@ class LiteralPredicate(models.Model):
         return self.subject.identifier, self.predicate, self.object
 
 
-class AbstractStatement(models.Model):
-    """
-    Base class for statements.
-    """
-
-    id = UUIDField("ID", primary_key=True)
-
-    subject = fields.URIField("Subject", db_index=True)
-    predicate = fields.URIField("Predicate", db_index=True)
-
-    class Meta:
-        abstract = True
-
-    def __unicode__(self):
-        """Returns the triple and its context"""
-        return u"({0}, {1}, {2})".format(self.subject, self.predicate, getattr(self, 'object'))
-
-    def as_triple(self):
-        """
-        Converts this statement back to a triple.
-        """
-        return self.subject, self.predicate, getattr(self, 'object')
-
-
-class Statement(AbstractStatement):
-    """
-    A generic statement.
-    """
-
-    object = fields.URIField("Object", null=True, db_index=True)
-    context_refs = models.ManyToManyField(ContextRef, verbose_name="Context(s)", db_index=True)
-
-    class Meta:
-        unique_together = ('subject', 'predicate', 'object')
-
-
-class LiteralStatement(AbstractStatement):
-    """
-    A statement where the object is a literal.
-    """
-
-    object = fields.LiteralField("Object", null=True, db_index=True)
-    context_refs = models.ManyToManyField(ContextRef, verbose_name="Context(s)", db_index=True)
-
-    class Meta:
-        unique_together = ('subject', 'predicate', 'object')
-
-
-class Namespace(models.Model):
+class NamespaceModel(models.Model):
     """
     A namespace definition.
 

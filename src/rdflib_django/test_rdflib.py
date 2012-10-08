@@ -3,7 +3,6 @@ Unittests based on the tests in the rdflib-extras package
 """
 from django import test
 from rdflib.graph import Graph, ConjunctiveGraph
-from rdflib.namespace import RDF
 from rdflib.term import URIRef, BNode
 
 
@@ -127,45 +126,6 @@ class GraphTestCase(test.TestCase):
         self.assertEquals(len(list(triples((Any, Any, Any)))), 7)
         self.removeStuff()
         self.assertEquals(len(list(triples((Any, Any, Any)))), 0)
-
-    def xxx_testStatementNode(self):
-        graph = self.graph
-
-        from rdflib.term import Statement
-
-        c = URIRef("http://example.org/foo#c")
-        r = URIRef("http://example.org/foo#r")
-        s = Statement((self.michel, self.likes, self.pizza), c)
-        graph.add((s, RDF.value, r))
-        self.assertEquals(r, graph.value(s, RDF.value))
-        self.assertEquals(s, graph.value(predicate=RDF.value, object=r))
-
-    def xxx_testGraphValue(self):
-        from rdflib.graph import GraphValue
-
-        graph = self.graph
-
-        alice = URIRef("alice")
-        bob = URIRef("bob")
-        pizza = URIRef("pizza")
-        cheese = URIRef("cheese")
-
-        g1 = Graph()
-        g1.add((alice, RDF.value, pizza))
-        g1.add((bob, RDF.value, cheese))
-        g1.add((bob, RDF.value, pizza))
-
-        g2 = Graph()
-        g2.add((bob, RDF.value, pizza))
-        g2.add((bob, RDF.value, cheese))
-        g2.add((alice, RDF.value, pizza))
-
-        gv1 = GraphValue(store=graph.store, graph=g1)
-        gv2 = GraphValue(store=graph.store, graph=g2)
-        graph.add((gv1, RDF.value, gv2))
-        v = graph.value(gv1)
-        self.assertEquals(gv2.identifier, v.identifier)
-        graph.remove((gv1, RDF.value, gv2))
 
     def testConnected(self):
         graph = self.graph
@@ -375,7 +335,9 @@ class ContextTestCase(test.TestCase):
         # add to context 1
         graph = Graph(self.graph.store, self.c1)
         graph.add(triple)
-        self.assertEquals(len(self.graph), len(graph))
+
+        self.assertEquals(len(graph), 2)
+        self.assertEquals(len(self.graph), 2)
 
     def testAdd(self):
         self.addStuff()
@@ -445,12 +407,12 @@ class ContextTestCase(test.TestCase):
                 return c.identifier
             return c
 
-        self.assert_(self.c1 in [cid(c) for c in self.graph.contexts()])
-        self.assert_(self.c2 in [cid(c) for c in self.graph.contexts()])
+        self.assertIn(self.c1, [cid(c) for c in self.graph.contexts()])
+        self.assertIn(self.c2, [cid(c) for c in self.graph.contexts()])
 
         contextList = [cid(c) for c in self.graph.contexts(triple)]
-        self.assert_(self.c1 in contextList)
-        self.assert_(self.c2 in contextList)
+        self.assertIn(self.c1, contextList)
+        self.assertIn(self.c2, contextList)
 
     def testRemoveContext(self):
         c1 = self.c1
