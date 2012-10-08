@@ -1,61 +1,138 @@
 [
- {
-  "pk": "xml", 
-  "model": "rdflib_django.namespacemodel", 
-  "fields": {
-   "uri": "http://www.w3.org/XML/1998/namespace",
-   "fixed": true
-  }
- }, 
- {
-  "pk": "rdf", 
-  "model": "rdflib_django.namespacemodel", 
-  "fields": {
-   "uri": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-   "fixed": true
-  }
- }, 
- {
-  "pk": "rdfs", 
-  "model": "rdflib_django.namespacemodel", 
-  "fields": {
-   "uri": "http://www.w3.org/2000/01/rdf-schema#",
-   "fixed": true
-  }
- },
- {
-  "pk": "foaf",
-  "model": "rdflib_django.namespacemodel",
-  "fields": {
-   "uri": "http://xmlns.com/foaf/0.1/"
-  }
- },
- {
-  "pk": "schema",
-  "model": "rdflib_django.namespacemodel",
-  "fields": {
-   "uri": "http://schema.org/"
-  }
- },
- {
-  "pk": "dcterms",
-  "model": "rdflib_django.namespacemodel",
-  "fields": {
-   "uri": "http://purl.org/dc/terms/"
-  }
- },
- {
-  "pk": "void",
-  "model": "rdflib_django.namespacemodel",
-  "fields": {
-   "uri": "http://rdfs.org/ns/void#"
-  }
- },
- {
-  "pk": "skos",
-  "model": "rdflib_django.namespacemodel",
-  "fields": {
-   "uri": "http://www.w3.org/2004/02/skos/core#"
-  }
- }
+    {
+        "pk":"xml",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":true,
+            "uri":"http://www.w3.org/XML/1998/namespace"
+        }
+    },
+    {
+        "pk":"rdf",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":true,
+            "uri":"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+        }
+    },
+    {
+        "pk":"rdfs",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":true,
+            "uri":"http://www.w3.org/2000/01/rdf-schema#"
+        }
+    },
+    {
+        "pk":"foaf",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://xmlns.com/foaf/0.1/"
+        }
+    },
+    {
+        "pk":"schema",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://schema.org/"
+        }
+    },
+    {
+        "pk":"void",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://rdfs.org/ns/void#"
+        }
+    },
+    {
+        "pk":"skos",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://www.w3.org/2004/02/skos/core#"
+        }
+    },
+    {
+        "pk":"yago",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://dbpedia.org/class/yago/"
+        }
+    },
+    {
+        "pk":"rss",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://purl.org/rss/1.0/"
+        }
+    },
+    {
+        "pk":"sc",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://umbel.org/umbel/sc/"
+        }
+    },
+    {
+        "pk":"dbo",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://dbpedia.org/ontology/"
+        }
+    },
+    {
+        "pk":"dbp",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://dbpedia.org/property/"
+        }
+    },
+    {
+        "pk":"fb",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://rdf.freebase.com/ns/"
+        }
+    },
+    {
+        "pk":"geonames",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://www.geonames.org/ontology#"
+        }
+    },
+    {
+        "pk":"geo",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#"
+        }
+    },
+    {
+        "pk":"dbpedia",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://dbpedia.org/resource/"
+        }
+    },
+    {
+        "pk":"dc",
+        "model":"rdflib_django.namespacemodel",
+        "fields":{
+            "fixed":false,
+            "uri":"http://purl.org/dc/terms/"
+        }
+    }
 ]
