@@ -8,6 +8,7 @@ Namespace - A namespace binding
 
 """
 from django.db import models
+from django.utils.translation import ugettext as _
 from django_extensions.db.fields import UUIDField
 from rdflib_django import fields
 
@@ -107,6 +108,10 @@ class NamespaceModel(models.Model):
     prefix = models.CharField(max_length=50, verbose_name="Prefix", primary_key=True)
     uri = models.CharField(max_length=500, verbose_name="URI", db_index=True, unique=True)
     fixed = models.BooleanField(verbose_name="Fixed", editable=False, default=False)
+
+    class Meta:
+        verbose_name = _("namespace")
+        verbose_name_plural = _("namespaces")
 
     def __unicode__(self):
         return "@prefix {0}: <{1}>".format(self.prefix, self.uri)
