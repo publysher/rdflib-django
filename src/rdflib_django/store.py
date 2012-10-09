@@ -123,7 +123,7 @@ class DjangoStore(rdflib.store.Store):
         >>> g.open(configuration=None, create=False) == rdflib.store.VALID_STORE
         True
         """
-        models.ContextRef.objects.all().delete()
+        models.NamedGraph.objects.all().delete()
         models.Resource.objects.all().delete()
 
     def add(self, (s, p, o), context, quoted=False):
@@ -148,7 +148,7 @@ class DjangoStore(rdflib.store.Store):
 
         context_id = _get_context_id(context)
         if context_id is not None:
-            models.ContextRef.objects.get_or_create(identifier=context_id)
+            models.NamedGraph.objects.get_or_create(identifier=context_id)
 
         filter_parameters = dict(identifier=s)
         if context_id is not None:
@@ -226,7 +226,7 @@ class DjangoStore(rdflib.store.Store):
     # CONTEXT MANAGEMENT
 
     def contexts(self, triple=None):
-        for c in models.ContextRef.objects.all():
+        for c in models.NamedGraph.objects.all():
             yield c.identifier
 
     ######################

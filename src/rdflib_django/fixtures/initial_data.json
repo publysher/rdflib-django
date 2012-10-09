@@ -1,136 +1,153 @@
 [
     {
-        "pk":"xml",
+        "pk":"30017223-117f-11e2-bfff-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"xml",
             "fixed":true,
             "uri":"http://www.w3.org/XML/1998/namespace"
         }
     },
     {
-        "pk":"rdf",
+        "pk":"379ebf6e-117f-11e2-a271-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"rdf",
             "fixed":true,
             "uri":"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
         }
     },
     {
-        "pk":"rdfs",
+        "pk":"3d84b7e3-117f-11e2-85d3-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"rdfs",
             "fixed":true,
             "uri":"http://www.w3.org/2000/01/rdf-schema#"
         }
     },
     {
-        "pk":"foaf",
+        "pk":"41ec9d19-117f-11e2-b5f9-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"foaf",
             "fixed":false,
             "uri":"http://xmlns.com/foaf/0.1/"
         }
     },
     {
-        "pk":"schema",
+        "pk":"4816ec87-117f-11e2-924a-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"schema",
             "fixed":false,
             "uri":"http://schema.org/"
         }
     },
     {
-        "pk":"void",
+        "pk":"4d2d6b0a-117f-11e2-8bce-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"void",
             "fixed":false,
             "uri":"http://rdfs.org/ns/void#"
         }
     },
     {
-        "pk":"skos",
+        "pk":"51aef017-117f-11e2-8257-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"skos",
             "fixed":false,
             "uri":"http://www.w3.org/2004/02/skos/core#"
         }
     },
     {
-        "pk":"yago",
+        "pk":"56159223-117f-11e2-a778-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"yago",
             "fixed":false,
             "uri":"http://dbpedia.org/class/yago/"
         }
     },
     {
-        "pk":"rss",
+        "pk":"5b4e3eee-117f-11e2-8cb7-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"rss",
             "fixed":false,
             "uri":"http://purl.org/rss/1.0/"
         }
     },
     {
-        "pk":"sc",
+        "pk":"60c79654-117f-11e2-b2d4-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"sc",
             "fixed":false,
             "uri":"http://umbel.org/umbel/sc/"
         }
     },
     {
-        "pk":"dbo",
+        "pk":"6563f23d-117f-11e2-a3b9-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"dbo",
             "fixed":false,
             "uri":"http://dbpedia.org/ontology/"
         }
     },
     {
-        "pk":"dbp",
+        "pk":"6972ba70-117f-11e2-b0a6-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"dbp",
             "fixed":false,
             "uri":"http://dbpedia.org/property/"
         }
     },
     {
-        "pk":"fb",
+        "pk":"6ea54ac0-117f-11e2-876c-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"fb",
             "fixed":false,
             "uri":"http://rdf.freebase.com/ns/"
         }
     },
     {
-        "pk":"geonames",
+        "pk":"78399d3d-117f-11e2-9f1d-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"geonames",
             "fixed":false,
             "uri":"http://www.geonames.org/ontology#"
         }
     },
     {
-        "pk":"geo",
+        "pk":"7ca8d361-117f-11e2-bf7d-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"geo",
             "fixed":false,
             "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#"
         }
     },
     {
-        "pk":"dbpedia",
+        "pk":"81096673-117f-11e2-a774-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"dbpedia",
             "fixed":false,
             "uri":"http://dbpedia.org/resource/"
         }
     },
     {
-        "pk":"dc",
+        "pk":"84acc12b-117f-11e2-bf52-a82066059523",
         "model":"rdflib_django.namespacemodel",
         "fields":{
+            "prefix":"dc",
             "fixed":false,
             "uri":"http://purl.org/dc/terms/"
         }

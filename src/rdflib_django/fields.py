@@ -64,7 +64,7 @@ def serialize_uri(value):
     raise ValueError("Cannot get prepvalue for {0} of type {1}".format(value, value.__class__))
 
 
-class URIField(models.TextField):
+class URIField(models.CharField):
     """
     Custom field for storing URIRefs and BNodes.
 
@@ -73,6 +73,11 @@ class URIField(models.TextField):
 
     __metaclass__ = models.SubfieldBase
     description = "Field for storing URIRefs and BNodes."
+
+    def __init__(self, *args, **kwargs):
+        if not 'max_length' in kwargs:
+            kwargs['max_length'] = 500
+        super(URIField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
         return deserialize_uri(value)
@@ -84,7 +89,7 @@ class URIField(models.TextField):
         return serialize_uri(value)
 
 
-class GraphReferenceField(models.TextField):
+class GraphReferenceField(models.CharField):
     """
     Custom field for storing graph references.
     """
@@ -94,9 +99,9 @@ class GraphReferenceField(models.TextField):
 
     def to_python(self, value):
         if isinstance(value, Graph):
-            return value
+            return value.identifier
 
-        return Graph(identifier=deserialize_uri(value))
+        return deserialize_uri(value)
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)

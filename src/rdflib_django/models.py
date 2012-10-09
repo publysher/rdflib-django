@@ -1,11 +1,8 @@
 """
-The rdflib_django implementation uses Django models to store its triples. It provides the following models:
+The rdflib_django implementation uses Django models to store its triples.
 
-Statement - A generic triple
-LiteralStatement - A triple where the object is a literal.
-ContextRef - A context. Every triple is contained in zero or more contexts.
-Namespace - A namespace binding
-
+The underlying models are Resource centric, because rdflib-django is intended
+to be used for publishing resources.
 """
 from django.db import models
 from django.utils.translation import ugettext as _
@@ -13,25 +10,20 @@ from django_extensions.db.fields import UUIDField
 from rdflib_django import fields
 
 
-class ContextRef(models.Model):
+class NamedGraph(models.Model):
     """
-    Models a reference to a single context within a store.
+    Models a context which represents a named graph.
     """
 
-    identifier = fields.GraphReferenceField(max_length=200, unique=True, primary_key=True)
+    id = UUIDField(verbose_name=_("ID"), primary_key=True)
+    identifier = fields.URIField(verbose_name=_("Identifier"), unique=True)
 
     class Meta:
-        verbose_name = "Context"
-        verbose_name_plural = "Contexts"
+        verbose_name = _("named graph")
+        verbose_name_plural = _("named graphs")
 
     def __unicode__(self):
-        return u"{0}".format(self.identifier)
-
-    def triple_count(self):
-        """
-        The number of triples in this context.
-        """
-        return self.statement_set.count() + self.literalstatement_set.count()   # pylint: disable=E1101
+        return u"{0}".format(self.identifier, "identifier")
 
 
 class Resource(models.Model):
@@ -41,7 +33,7 @@ class Resource(models.Model):
 
     id = UUIDField(verbose_name="ID", primary_key=True)
     identifier = fields.URIField(max_length=500)
-    context = models.ForeignKey(ContextRef, verbose_name="Context", null=True)
+    context = models.ForeignKey(NamedGraph, verbose_name="Context", null=True)
 
     class Meta:
         unique_together = ('identifier', 'context')
@@ -56,9 +48,9 @@ class URIPredicate(models.Model):
     """
 
     id = UUIDField("ID", primary_key=True)
-    subject = models.ForeignKey(Resource, verbose_name="Subject", db_index=True)
-    predicate = fields.URIField("Predicate", db_index=True)
-    object = fields.URIField("Object", db_index=True)
+    subject = models.ForeignKey(Resource, verbose_name=_("Subject"), db_index=True)
+    predicate = fields.URIField(_("Predicate"), db_index=True)
+    object = fields.URIField(_("Object"), db_index=True)
 
     class Meta:
         unique_together = ('subject', 'predicate', 'object')
@@ -79,9 +71,9 @@ class LiteralPredicate(models.Model):
     """
 
     id = UUIDField("ID", primary_key=True)
-    subject = models.ForeignKey(Resource, verbose_name="Subject", db_index=True)
-    predicate = fields.URIField("Predicate", db_index=True)
-    object = fields.LiteralField("Object", db_index=True)
+    subject = models.ForeignKey(Resource, verbose_name=_("Subject"), db_index=True)
+    predicate = fields.URIField(_("Predicate"), db_index=True)
+    object = fields.LiteralField(_("Object"), db_index=True)
 
     class Meta:
         unique_together = ('subject', 'predicate', 'object')
@@ -105,9 +97,10 @@ class NamespaceModel(models.Model):
     remapped such as ``xml``, ``rdf`` and ``rdfs``.
     """
 
-    prefix = models.CharField(max_length=50, verbose_name="Prefix", primary_key=True)
-    uri = models.CharField(max_length=500, verbose_name="URI", db_index=True, unique=True)
-    fixed = models.BooleanField(verbose_name="Fixed", editable=False, default=False)
+    id = UUIDField(_("ID"), primary_key=True)
+    prefix = models.CharField(max_length=50, verbose_name=_("Prefix"), unique=True)
+    uri = models.CharField(max_length=500, verbose_name=_("URI"), db_index=True, unique=True)
+    fixed = models.BooleanField(verbose_name=_("Fixed"), editable=False, default=False)
 
     class Meta:
         verbose_name = _("namespace")

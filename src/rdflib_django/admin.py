@@ -5,12 +5,14 @@ from django.contrib import admin
 from rdflib_django import models, forms
 
 
-class ContextRefAdmin(admin.ModelAdmin):
+class NamedGraphAdmin(admin.ModelAdmin):
     """
-    Admin module for Contexts.
+    Admin module for named graphs.
     """
 
-    list_display = ('identifier', 'triple_count')
+    list_display = ('identifier', )
+    ordering = ('identifier', )
+    search_fields = ('identifier', )
 
 
 class NamespaceAdmin(admin.ModelAdmin):
@@ -25,7 +27,6 @@ class NamespaceAdmin(admin.ModelAdmin):
     def get_actions(self, request):
         return []
 
-
     def has_delete_permission(self, request, obj=None):
         """
         Default namespaces cannot be deleted.
@@ -35,5 +36,5 @@ class NamespaceAdmin(admin.ModelAdmin):
 
         return super(NamespaceAdmin, self).has_delete_permission(request, obj)
 
-admin.site.register(models.ContextRef, ContextRefAdmin)
+admin.site.register(models.NamedGraph, NamedGraphAdmin)
 admin.site.register(models.NamespaceModel, NamespaceAdmin)
