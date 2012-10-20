@@ -1,6 +1,6 @@
 [
     {
-        "pk":"30017223-117f-11e2-bfff-a82066059523",
+        "pk":1,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"xml",
@@ -9,7 +9,7 @@
         }
     },
     {
-        "pk":"379ebf6e-117f-11e2-a271-a82066059523",
+        "pk":2,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"rdf",
@@ -18,7 +18,7 @@
         }
     },
     {
-        "pk":"3d84b7e3-117f-11e2-85d3-a82066059523",
+        "pk":3,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"rdfs",
@@ -27,7 +27,7 @@
         }
     },
     {
-        "pk":"41ec9d19-117f-11e2-b5f9-a82066059523",
+        "pk":4,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"foaf",
@@ -36,7 +36,7 @@
         }
     },
     {
-        "pk":"4816ec87-117f-11e2-924a-a82066059523",
+        "pk":5,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"schema",
@@ -45,7 +45,7 @@
         }
     },
     {
-        "pk":"4d2d6b0a-117f-11e2-8bce-a82066059523",
+        "pk":6,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"void",
@@ -54,7 +54,7 @@
         }
     },
     {
-        "pk":"51aef017-117f-11e2-8257-a82066059523",
+        "pk":7,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"skos",
@@ -63,7 +63,7 @@
         }
     },
     {
-        "pk":"56159223-117f-11e2-a778-a82066059523",
+        "pk":8,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"yago",
@@ -72,7 +72,7 @@
         }
     },
     {
-        "pk":"5b4e3eee-117f-11e2-8cb7-a82066059523",
+        "pk":9,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"rss",
@@ -81,7 +81,7 @@
         }
     },
     {
-        "pk":"60c79654-117f-11e2-b2d4-a82066059523",
+        "pk":10,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"sc",
@@ -90,7 +90,7 @@
         }
     },
     {
-        "pk":"6563f23d-117f-11e2-a3b9-a82066059523",
+        "pk":11,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"dbo",
@@ -99,7 +99,7 @@
         }
     },
     {
-        "pk":"6972ba70-117f-11e2-b0a6-a82066059523",
+        "pk":12,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"dbp",
@@ -108,7 +108,7 @@
         }
     },
     {
-        "pk":"6ea54ac0-117f-11e2-876c-a82066059523",
+        "pk":13,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"fb",
@@ -117,7 +117,7 @@
         }
     },
     {
-        "pk":"78399d3d-117f-11e2-9f1d-a82066059523",
+        "pk":14,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"geonames",
@@ -126,7 +126,7 @@
         }
     },
     {
-        "pk":"7ca8d361-117f-11e2-bf7d-a82066059523",
+        "pk":15,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"geo",
@@ -135,7 +135,7 @@
         }
     },
     {
-        "pk":"81096673-117f-11e2-a774-a82066059523",
+        "pk":16,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"dbpedia",
@@ -144,7 +144,7 @@
         }
     },
     {
-        "pk":"84acc12b-117f-11e2-bf52-a82066059523",
+        "pk":17,
         "model":"rdflib_django.namespacemodel",
         "fields":{
             "prefix":"dc",
