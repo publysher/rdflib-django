@@ -46,63 +46,49 @@ class NamespaceModel(models.Model):
         return "@prefix {0}: <{1}>".format(self.prefix, self.uri)
 
 
-class Resource(models.Model):
+class URIStatement(models.Model):
     """
-    The subject part of a triple.
-    """
-
-    id = UUIDField(verbose_name="ID", primary_key=True)
-    identifier = fields.URIField(max_length=500)
-    context = models.ForeignKey(NamedGraph, verbose_name="Context", null=True)
-
-    class Meta:
-        unique_together = ('identifier', 'context')
-
-    def __unicode__(self):
-        return u"{0}".format(self.identifier)
-
-
-class URIPredicate(models.Model):
-    """
-    Base class for resource predicates with a URI value.
+    Statement where the object is a URI.
     """
 
     id = UUIDField("ID", primary_key=True)
-    subject = models.ForeignKey(Resource, verbose_name=_("Subject"), db_index=True)
+    subject = fields.URIField(verbose_name=_("Subject"), db_index=True)
     predicate = fields.URIField(_("Predicate"), db_index=True)
     object = fields.URIField(_("Object"), db_index=True)
+    context = models.ForeignKey(NamedGraph, verbose_name=_("Context"))
 
     class Meta:
-        unique_together = ('subject', 'predicate', 'object')
+        unique_together = ('subject', 'predicate', 'object', 'context')
 
     def __unicode__(self):
-        return u"{0}, {1}".format(self.as_triple(), self.subject.context_id)    # pylint: disable=E1101
+        return u"{0}, {1}".format(self.as_triple(), self.context.identifier)    # pylint: disable=E1101
 
     def as_triple(self):
         """
         Converts this predicate to a triple.
         """
-        return self.subject.identifier, self.predicate, self.object
+        return self.subject, self.predicate, self.object
 
 
-class LiteralPredicate(models.Model):
+class LiteralStatement(models.Model):
     """
-    Base class for resource predicates with a literal value.
+    Statement where the object is a literal.
     """
 
     id = UUIDField("ID", primary_key=True)
-    subject = models.ForeignKey(Resource, verbose_name=_("Subject"), db_index=True)
+    subject = fields.URIField(verbose_name=_("Subject"), db_index=True)
     predicate = fields.URIField(_("Predicate"), db_index=True)
     object = fields.LiteralField(_("Object"), db_index=True)
+    context = models.ForeignKey(NamedGraph, verbose_name=_("Context"))
 
     class Meta:
-        unique_together = ('subject', 'predicate', 'object')
+        unique_together = ('subject', 'predicate', 'object', 'context')
 
     def __unicode__(self):
-        return u"{0}, {1}".format(self.as_triple(), self.subject.context_id)    # pylint: disable=E1101
+        return u"{0}, {1}".format(self.as_triple(), self.context.identifier)    # pylint: disable=E1101
 
     def as_triple(self):
         """
         Converts this predicate to a triple.
         """
-        return self.subject.identifier, self.predicate, self.object
+        return self.subject, self.predicate, self.object

@@ -3,7 +3,6 @@ Essential implementation of the Store interface defined by RDF lib.
 """
 from django.db.utils import IntegrityError
 import rdflib
-from rdflib.graph import Graph
 from rdflib.store import VALID_STORE
 from rdflib.term import Literal, Identifier
 from rdflib_django import models
@@ -31,25 +30,22 @@ def _get_query_sets_for_object(o):
     """
     if o:
         if isinstance(o, Literal):
-            query_sets = [models.LiteralPredicate.objects]
+            query_sets = [models.LiteralStatement.objects]
         else:
-            query_sets = [models.URIPredicate.objects]
+            query_sets = [models.URIStatement.objects]
     else:
-        query_sets = [models.URIPredicate.objects, models.LiteralPredicate.objects]
+        query_sets = [models.URIStatement.objects, models.LiteralStatement.objects]
     return query_sets
 
 
-def _get_context_id(context):
+def _get_named_graph(context):
     """
-    Returns the ID of this context.
+    Returns the named graph for this context.
     """
     if context is None:
         return None
 
-    if isinstance(context, Graph):
-        return context.identifier
-
-    raise ValueError("Unknown context %s of type %s" % (context, context.__class__))
+    return models.NamedGraph.objects.get_or_create(identifier=context.identifier)[0]
 
 
 class DjangoStore(rdflib.store.Store):
@@ -124,7 +120,8 @@ class DjangoStore(rdflib.store.Store):
         True
         """
         models.NamedGraph.objects.all().delete()
-        models.Resource.objects.all().delete()
+        models.URIStatement.objects.all().delete()
+        models.LiteralStatement.objects.all().delete()
 
     def add(self, (s, p, o), context, quoted=False):
         """
@@ -146,35 +143,28 @@ class DjangoStore(rdflib.store.Store):
         assert isinstance(o, Identifier)
         assert not quoted
 
-        context_id = _get_context_id(context)
-        if context_id is not None:
-            models.NamedGraph.objects.get_or_create(identifier=context_id)
-
-        filter_parameters = dict(identifier=s)
-        if context_id is not None:
-            filter_parameters['context_id'] = context_id
-
-        resource = models.Resource.objects.get_or_create(**filter_parameters)[0]    # pylint: disable=W0142
+        named_graph = _get_named_graph(context)
 
         query_set = _get_query_sets_for_object(o)[0]
         query_set.get_or_create(
-            subject=resource,
+            subject=s,
             predicate=p,
-            object=o
-        )
+            object=o,
+            context=named_graph,
+            )
 
     def remove(self, (s, p, o), context=None):
         """
         Removes a triple from the store.
         """
-        context_id = _get_context_id(context)
+        named_graph = _get_named_graph(context)
         query_sets = _get_query_sets_for_object(o)
 
         filter_parameters = dict()
-        if context_id is not None:
-            filter_parameters['subject__context_id'] = context_id
+        if named_graph is not None:
+            filter_parameters['context_id'] = named_graph.id
         if s:
-            filter_parameters['subject__identifier'] = s
+            filter_parameters['subject'] = s
         if p:
             filter_parameters['predicate'] = p
         if o:
@@ -189,14 +179,14 @@ class DjangoStore(rdflib.store.Store):
         """
         Returns all triples in the current store.
         """
-        context_id = _get_context_id(context)
+        named_graph = _get_named_graph(context)
         query_sets = _get_query_sets_for_object(o)
 
         filter_parameters = dict()
-        if context_id is not None:
-            filter_parameters['subject__context_id'] = context_id
+        if named_graph is not None:
+            filter_parameters['context_id'] = named_graph.id
         if s:
-            filter_parameters['subject__identifier'] = s
+            filter_parameters['subject'] = s
         if p:
             filter_parameters['predicate'] = p
         if o:
@@ -213,14 +203,13 @@ class DjangoStore(rdflib.store.Store):
         """
         Returns the number of statements in this Graph.
         """
-        context_id = _get_context_id(context)
-        if context_id is not None:
-            return (models.LiteralPredicate.objects.filter(subject__context__pk=context_id).count()
-                    + models.URIPredicate.objects.filter(subject__context__pk=context_id).count())
+        named_graph = _get_named_graph(context)
+        if named_graph is not None:
+            return (models.LiteralStatement.objects.filter(context_id=named_graph.id).count()
+                    + models.URIStatement.objects.filter(context_id=named_graph.id).count())
         else:
-            return (models.URIPredicate.objects.values('subject__identifier', 'predicate', 'object').distinct().count()
-                    + models.LiteralPredicate.objects.values('subject__identifier', 'predicate',
-                                                             'object').distinct().count())
+            return (models.URIStatement.objects.values('subject', 'predicate', 'object').distinct().count()
+                    + models.LiteralStatement.objects.values('subject', 'predicate', 'object').distinct().count())
 
     ####################
     # CONTEXT MANAGEMENT
