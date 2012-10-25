@@ -1,28 +1,21 @@
 """
 Essential implementation of the Store interface defined by RDF lib.
 """
-import itertools
-import logging
 from django.db.utils import IntegrityError
 import rdflib
 from rdflib.store import VALID_STORE
-from rdflib.term import Literal, Identifier, BNode
+from rdflib.term import Literal, Identifier
 from rdflib_django import models
-from rdflib_django.models import Namespace
+from rdflib_django.models import NamespaceModel
 
 
 DEFAULT_STORE = "Default Store"
-GLOBAL_CONTEXT = BNode("Global Context")
-
 
 DEFAULT_NAMESPACES = (
     ("xml", u"http://www.w3.org/XML/1998/namespace"),
     ("rdf", u"http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
     ("rdfs", u"http://www.w3.org/2000/01/rdf-schema#")
-)
-
-
-log = logging.getLogger(__name__)
+    )
 
 
 def _get_query_sets_for_object(o):
@@ -39,10 +32,20 @@ def _get_query_sets_for_object(o):
         if isinstance(o, Literal):
             query_sets = [models.LiteralStatement.objects]
         else:
-            query_sets = [models.Statement.objects]
+            query_sets = [models.URIStatement.objects]
     else:
-        query_sets = [models.Statement.objects, models.LiteralStatement.objects]
+        query_sets = [models.URIStatement.objects, models.LiteralStatement.objects]
     return query_sets
+
+
+def _get_named_graph(context):
+    """
+    Returns the named graph for this context.
+    """
+    if context is None:
+        return None
+
+    return models.NamedGraph.objects.get_or_create(identifier=context.identifier)[0]
 
 
 class DjangoStore(rdflib.store.Store):
@@ -88,8 +91,6 @@ class DjangoStore(rdflib.store.Store):
             raise ValueError("multiple stores are not allowed")
 
         self.identifier = DEFAULT_STORE
-        self.default_context = models.ContextRef.objects.get(identifier=GLOBAL_CONTEXT)
-        self.context_cache = dict()
         super(DjangoStore, self).__init__(configuration, identifier)
         self.open()
 
@@ -118,37 +119,9 @@ class DjangoStore(rdflib.store.Store):
         >>> g.open(configuration=None, create=False) == rdflib.store.VALID_STORE
         True
         """
-        models.Statement.objects.all().delete()
+        models.NamedGraph.objects.all().delete()
+        models.URIStatement.objects.all().delete()
         models.LiteralStatement.objects.all().delete()
-        models.ContextRef.objects.exclude(identifier=GLOBAL_CONTEXT).delete()
-
-    def _get_context_ref(self, context):
-        """
-        Returns a ContextRef for the specified context. Raises DoesNotExist if it does not exist.
-        """
-        if context is None:
-            return self.default_context
-        elif context in self.context_cache:
-            return self.context_cache.get(context)
-        else:
-            identifier = context.identifier if hasattr(context, 'identifier') else unicode(context)
-            result = models.ContextRef.objects.get(identifier=identifier)
-            self.context_cache[context] = result
-            return result
-
-    def _get_or_create_context_ref(self, context):
-        """
-        Returns a ContextRef for the specified context. Creates a new one if it does not yet exist.
-        """
-        if context is None:
-            return self.default_context
-        elif context in self.context_cache:
-            return self.context_cache.get(context)
-        else:
-            identifier = context.identifier if hasattr(context, 'identifier') else unicode(context)
-            result = models.ContextRef.objects.get_or_create(identifier=identifier)[0]
-            self.context_cache[context] = result
-            return result
 
     def add(self, (s, p, o), context, quoted=False):
         """
@@ -170,77 +143,83 @@ class DjangoStore(rdflib.store.Store):
         assert isinstance(o, Identifier)
         assert not quoted
 
+        named_graph = _get_named_graph(context)
+
         query_set = _get_query_sets_for_object(o)[0]
-        statement = query_set.get_or_create(
+        query_set.get_or_create(
             subject=s,
             predicate=p,
             object=o,
-        )[0]
-        context_ref = self._get_or_create_context_ref(context)
-        if context_ref:
-            statement.context_refs.add(context_ref)
+            context=named_graph,
+            )
 
     def remove(self, (s, p, o), context=None):
         """
         Removes a triple from the store.
         """
-        try:
-            context_ref = self._get_context_ref(context)
-        except models.ContextRef.DoesNotExist:
-            return
-
+        named_graph = _get_named_graph(context)
         query_sets = _get_query_sets_for_object(o)
-        query_sets = self._filter_query_sets(query_sets, (s, p, o), context_ref)
+
+        filter_parameters = dict()
+        if named_graph is not None:
+            filter_parameters['context_id'] = named_graph.id
+        if s:
+            filter_parameters['subject'] = s
+        if p:
+            filter_parameters['predicate'] = p
+        if o:
+            filter_parameters['object'] = o
+
+        query_sets = [qs.filter(**filter_parameters) for qs in query_sets]  # pylint: disable=W0142
 
         for qs in query_sets:
-            for stmt in qs.all():
-                stmt.context_refs.remove(context_ref)
-                if context_ref is self.default_context or not stmt.context_refs.count():
-                    stmt.delete()
-
-    def _filter_query_sets(self, query_sets, (s, p, o), context_ref):
-        """
-        Creates filtered versions of the specified query sets.
-        """
-        if s is not None:
-            query_sets = [qs.filter(subject=s) for qs in query_sets]
-        if p is not None:
-            query_sets = [qs.filter(predicate=p) for qs in query_sets]
-        if o is not None:
-            query_sets = [qs.filter(object=o) for qs in query_sets]
-        if context_ref is not self.default_context:
-            query_sets = [qs.filter(context_refs=context_ref) for qs in query_sets]
-        return query_sets
+            qs.delete()
 
     def triples(self, (s, p, o), context=None):
         """
         Returns all triples in the current store.
         """
-        context_ref = self._get_context_ref(context)
+        named_graph = _get_named_graph(context)
         query_sets = _get_query_sets_for_object(o)
 
-        query_sets = self._filter_query_sets(query_sets, (s, p, o), context_ref)
+        filter_parameters = dict()
+        if named_graph is not None:
+            filter_parameters['context_id'] = named_graph.id
+        if s:
+            filter_parameters['subject'] = s
+        if p:
+            filter_parameters['predicate'] = p
+        if o:
+            filter_parameters['object'] = o
 
-        matching_statements = itertools.chain(*[qs.all() for qs in query_sets])
-        for statement in matching_statements:
-            yield statement.as_triple(), context
+        query_sets = [qs.filter(**filter_parameters) for qs in query_sets]  # pylint: disable=W0142
+
+        for qs in query_sets:
+            for statement in qs:
+                triple = statement.as_triple()
+                yield triple, context
 
     def __len__(self, context=None):
         """
         Returns the number of statements in this Graph.
         """
-        context_ref = self._get_context_ref(context)
+        named_graph = _get_named_graph(context)
+        if named_graph is not None:
+            return (models.LiteralStatement.objects.filter(context_id=named_graph.id).count()
+                    + models.URIStatement.objects.filter(context_id=named_graph.id).count())
+        else:
+            return (models.URIStatement.objects.values('subject', 'predicate', 'object').distinct().count()
+                    + models.LiteralStatement.objects.values('subject', 'predicate', 'object').distinct().count())
 
-        query_sets = _get_query_sets_for_object(None)
-        if context_ref is not self.default_context:
-            query_sets = [qs.filter(context_refs=context_ref) for qs in query_sets]
-
-        counts = [qs.count() for qs in query_sets]
-        return reduce(lambda x, y: x + y, counts, 0)
+    ####################
+    # CONTEXT MANAGEMENT
 
     def contexts(self, triple=None):
-        for c in models.ContextRef.objects.all():
+        for c in models.NamedGraph.objects.all():
             yield c.identifier
+
+    ######################
+    # NAMESPACE MANAGEMENT
 
     def bind(self, prefix, namespace):
         for ns in DEFAULT_NAMESPACES:
@@ -248,27 +227,27 @@ class DjangoStore(rdflib.store.Store):
                 return
 
         try:
-            ns = Namespace(prefix=prefix, uri=namespace)
+            ns = NamespaceModel(prefix=prefix, uri=namespace)
             ns.save()
         except IntegrityError:
-            Namespace.objects.filter(prefix=prefix).delete()
-            Namespace.objects.filter(uri=namespace).delete()
-            Namespace(prefix=prefix, uri=namespace).save()
+            NamespaceModel.objects.filter(prefix=prefix).delete()
+            NamespaceModel.objects.filter(uri=namespace).delete()
+            NamespaceModel(prefix=prefix, uri=namespace).save()
 
     def prefix(self, namespace):
         try:
-            ns = Namespace.objects.get(uri=namespace)
+            ns = NamespaceModel.objects.get(uri=namespace)
             return ns.prefix
-        except Namespace.DoesNotExist:
+        except NamespaceModel.DoesNotExist:
             return None
 
     def namespace(self, prefix):
         try:
-            ns = Namespace.objects.get(prefix=prefix)
+            ns = NamespaceModel.objects.get(prefix=prefix)
             return ns.uri
-        except Namespace.DoesNotExist:
+        except NamespaceModel.DoesNotExist:
             return None
 
     def namespaces(self):
-        for ns in Namespace.objects.all():
+        for ns in NamespaceModel.objects.all():
             yield ns.prefix, ns.uri

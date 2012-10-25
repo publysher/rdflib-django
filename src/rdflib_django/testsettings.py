@@ -1,14 +1,18 @@
 """
 Settings for testing the application.
 """
+import os
+
 DEBUG = True
 
 DJANGO_RDFLIB_DEVELOP = True
 
+DB_PATH = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'rdflib_django.db'))
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'rdflib_django.db',
+        'NAME': DB_PATH,
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -33,3 +37,27 @@ INSTALLED_APPS = (
     'rdflib_django',
     )
 ROOT_URLCONF = 'rdflib_django.urls'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+        },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': 'INFO',
+            },
+        }
+}

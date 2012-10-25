@@ -13,7 +13,7 @@ class NamespaceForm(forms.ModelForm):
     """
 
     class Meta:
-        model = models.Namespace
+        model = models.NamespaceModel
         fields = ('prefix', 'uri')
 
     def __init__(self, *args, **kwargs):

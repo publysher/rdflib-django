@@ -7,8 +7,6 @@ import rdflib
 from rdflib.graph import Graph
 from rdflib.namespace import RDF, RDFS, Namespace
 from rdflib.term import URIRef, Literal, BNode
-from rdflib_django import models
-from rdflib_django.store import DjangoStore
 
 
 EX = Namespace("http://www.example.com/")
@@ -24,32 +22,6 @@ date_literal = Literal(datetime.date.today())
 number_literal = Literal(14)
 bool_literal = Literal(True)
 graph_context = Graph(identifier=EX['graph-context'])
-
-
-class StoreTest(test.TestCase):
-    """
-    Some checks that operate directly on the underlying Model implementation.
-    """
-
-    def setUp(self):
-        self.store = DjangoStore()
-        self.context = Graph()
-
-    def test_add_statement_found(self):
-        """
-        Add a statement in the default context and assure it exists.
-        """
-        self.assertEquals(models.Statement.objects.count(), 0)
-        self.store.add((artis, RDF.type, zoo), None)
-        self.assertEquals(models.Statement.objects.count(), 1)
-
-    def test_add_statement_with_graph_context_found(self):
-        """
-        Add a statement in a specific context and assure it exists.
-        """
-        self.assertEquals(models.Statement.objects.count(), 0)
-        self.store.add((artis, RDF.type, zoo), graph_context)
-        self.assertEquals(models.Statement.objects.count(), 1)
 
 
 class GraphTest(test.TestCase):

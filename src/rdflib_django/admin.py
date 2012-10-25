@@ -5,30 +5,14 @@ from django.contrib import admin
 from rdflib_django import models, forms
 
 
-class ContextRefAdmin(admin.ModelAdmin):
+class NamedGraphAdmin(admin.ModelAdmin):
     """
-    Admin module for Contexts.
-    """
-
-    list_display = ('identifier', 'triple_count')
-
-
-class StatementAdmin(admin.ModelAdmin):
-    """
-    Admin module for Statements.
+    Admin module for named graphs.
     """
 
-    list_display = ('subject', 'predicate', 'object')
-    list_filter = ('context_refs', 'predicate')
-
-
-class LiteralStatementAdmin(admin.ModelAdmin):
-    """
-    Admin module for Literal statements.
-    """
-
-    list_display = ('subject', 'predicate', 'object')
-    list_filter = ('context_refs', 'predicate')
+    list_display = ('identifier', )
+    ordering = ('identifier', )
+    search_fields = ('identifier', )
 
 
 class NamespaceAdmin(admin.ModelAdmin):
@@ -40,11 +24,8 @@ class NamespaceAdmin(admin.ModelAdmin):
     search_fields = ('prefix', 'uri')
     form = forms.NamespaceForm
 
-#    def get_readonly_fields(self, request, obj=None):
-#        if obj and obj.fixed:
-#            return 'prefix', 'uri', 'fixed'
-#        else:
-#            return 'fixed',
+    def get_actions(self, request):
+        return []
 
     def has_delete_permission(self, request, obj=None):
         """
@@ -52,9 +33,11 @@ class NamespaceAdmin(admin.ModelAdmin):
         """
         if obj is not None and obj.fixed:
             return False
+
         return super(NamespaceAdmin, self).has_delete_permission(request, obj)
 
-admin.site.register(models.ContextRef, ContextRefAdmin)
-admin.site.register(models.Statement, StatementAdmin)
-admin.site.register(models.LiteralStatement, LiteralStatementAdmin)
-admin.site.register(models.Namespace, NamespaceAdmin)
+admin.site.register(models.NamedGraph, NamedGraphAdmin)
+admin.site.register(models.NamespaceModel, NamespaceAdmin)
+
+admin.site.register(models.URIStatement)
+admin.site.register(models.LiteralStatement)
