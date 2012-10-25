@@ -38,3 +38,6 @@ class NamespaceAdmin(admin.ModelAdmin):
 
 admin.site.register(models.NamedGraph, NamedGraphAdmin)
 admin.site.register(models.NamespaceModel, NamespaceAdmin)
+
+admin.site.register(models.URIStatement)
+admin.site.register(models.LiteralStatement)

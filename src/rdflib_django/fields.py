@@ -17,6 +17,9 @@ class LiteralField(models.TextField):
     description = "Field for storing Literals, including their type and language"
 
     def to_python(self, value):
+        if not value:
+            return None
+
         if isinstance(value, Literal):
             return value
 
